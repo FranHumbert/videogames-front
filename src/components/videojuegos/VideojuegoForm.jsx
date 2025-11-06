@@ -9,6 +9,7 @@ function VideojuegoForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = Boolean(id);
+  
   const [formData, setFormData] = useState({
     titulo: '',
     anio_lanzamiento: '',
@@ -24,6 +25,7 @@ function VideojuegoForm() {
   useEffect(() => {
     loadInitialData();
   }, [id]);
+
   const loadInitialData = async () => {
     try {
       setLoading(true);
@@ -35,10 +37,8 @@ function VideojuegoForm() {
         const videojuegoRes = await api.get(`/videojuegos/${id}`);
         const videojuego = videojuegoRes.data.data;
         
-        // Extraer solo los IDs de las plataformas
         const plataformaIds = videojuego.plataformas.map(p => p.id);
         
-        // Poblar el formulario con datos existentes
         setFormData({
           titulo: videojuego.titulo,
           anio_lanzamiento: videojuego.anio_lanzamiento,
@@ -55,26 +55,20 @@ function VideojuegoForm() {
     }
   };
 
-  // FUNCIÓN: Manejar cambios en inputs de texto
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value
     });
-    
   };
 
   const handlePlataformaToggle = (plataformaId) => {
     setFormData(prev => {
-      
-      // Verificar si la plataforma ya está seleccionada
       const isSelected = prev.plataformas.includes(plataformaId);
-      
-      // Calcular nuevo array de plataformas
       const newPlataformas = isSelected
-        ? prev.plataformas.filter(id => id !== plataformaId) // Quitar
-        : [...prev.plataformas, plataformaId];               // Agregar
+        ? prev.plataformas.filter(id => id !== plataformaId)
+        : [...prev.plataformas, plataformaId];
       
       return {
         ...prev,
@@ -83,24 +77,17 @@ function VideojuegoForm() {
     });
   };
 
-  // FUNCIÓN: Enviar formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     setErrors([]);
-    
     setSubmitting(true);
 
     try {
       if (isEditMode) {
-        // MODO EDITAR: PUT /videojuegos/:id
         await api.put(`/videojuegos/${id}`, formData);
-        
         alert('✅ Videojuego actualizado exitosamente');
       } else {
-        // MODO CREAR: POST /videojuegos
         await api.post('/videojuegos', formData);
-        
         alert('✅ Videojuego creado exitosamente');
       }
       
@@ -108,8 +95,6 @@ function VideojuegoForm() {
       
     } catch (error) {
       console.error('Error al guardar:', error);
-      
-      // Extraer errores de validación (422)
       const validationErrors = getValidationErrors(error);
       setErrors(validationErrors);
       
@@ -132,71 +117,100 @@ function VideojuegoForm() {
 
   return (
     <Layout>
-      <div>
+      <div className="cyber-fade-in" style={{ padding: '2rem' }}>
+        
+        {/* ============================================ */}
         {/* ENCABEZADO */}
+        {/* ============================================ */}
         <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '2rem'
+          marginBottom: '3rem',
+          textAlign: 'center'
         }}>
-          <div>
-            <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>
-              {isEditMode ? '✏️ Editar Videojuego' : '➕ Crear Videojuego'}
-            </h1>
-            <p style={{ color: '#666' }}>
-              {isEditMode 
-                ? 'Modifica los datos del videojuego' 
-                : 'Completa el formulario para agregar un nuevo videojuego'
-              }
-            </p>
+          <div style={{
+            fontSize: '5rem',
+            marginBottom: '1rem',
+            filter: 'drop-shadow(0 0 20px var(--cyber-cyan))'
+          }}>
+            {isEditMode ? '✏️' : '➕'}
           </div>
+          
+          <h1 style={{
+            fontSize: '2.5rem',
+            fontWeight: '900',
+            textTransform: 'uppercase',
+            letterSpacing: '5px',
+            background: 'linear-gradient(45deg, var(--cyber-cyan), var(--cyber-magenta))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '0.5rem'
+          }}>
+            {isEditMode ? 'EDITAR VIDEOJUEGO' : 'CREAR VIDEOJUEGO'}
+          </h1>
+          
+          <p style={{
+            color: 'var(--cyber-text-dim)',
+            fontSize: '1rem',
+            textTransform: 'uppercase',
+            letterSpacing: '2px'
+          }}>
+            {isEditMode 
+              ? '// Modificar Datos del Registro' 
+              : '// Agregar Nuevo al Sistema'
+            }
+          </p>
+
+          <div className="cyber-divider" style={{ margin: '2rem auto', maxWidth: '400px' }} />
         </div>
 
+        {/* ============================================ */}
         {/* TARJETA DEL FORMULARIO */}
-        <div style={{
-          backgroundColor: 'white',
-          padding: '2rem',
-          borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          maxWidth: '800px',
-          margin: '0 auto'
+        {/* ============================================ */}
+        <div className="cyber-card" style={{
+          maxWidth: '900px',
+          margin: '0 auto',
+          padding: '3rem',
+          borderColor: 'var(--cyber-cyan)',
+          background: 'rgba(26, 31, 58, 0.8)'
         }}>
           
-          {/* LISTA DE ERRORES */}
+          {/* Lista de Errores */}
           {errors.length > 0 && (
-            <div style={{
-              backgroundColor: '#fee',
-              color: '#c00',
-              padding: '1rem',
-              borderRadius: '6px',
-              marginBottom: '1.5rem',
-              border: '1px solid #fcc'
-            }}>
-              <strong>⚠️ Errores de validación:</strong>
+            <div className="cyber-alert error" style={{ marginBottom: '2rem' }}>
+              <strong>⚠️ ERRORES DE VALIDACIÓN:</strong>
               <ul style={{
                 margin: '0.5rem 0 0 0',
-                paddingLeft: '1.5rem'
+                paddingLeft: '1.5rem',
+                listStyle: 'none'
               }}>
                 {errors.map((error, index) => (
-                  <li key={index}>{error}</li>
+                  <li key={index} style={{ marginTop: '0.5rem' }}>
+                    <span style={{ marginRight: '0.5rem' }}>▸</span>
+                    {error}
+                  </li>
                 ))}
               </ul>
             </div>
           )}
 
-          {/* FORMULARIO */}
+          {/* Formulario */}
           <form onSubmit={handleSubmit}>
             
+            {/* ============================================ */}
             {/* CAMPO: Título */}
-            <div style={{ marginBottom: '1.5rem' }}>
+            {/* ============================================ */}
+            <div style={{ marginBottom: '2rem' }}>
               <label style={{
                 display: 'block',
-                marginBottom: '0.5rem',
+                marginBottom: '0.75rem',
+                color: 'var(--cyber-cyan)',
+                fontSize: '0.9rem',
                 fontWeight: 'bold',
-                fontSize: '1rem'
+                textTransform: 'uppercase',
+                letterSpacing: '2px'
               }}>
-                Título <span style={{ color: 'red' }}>*</span>
+                <span style={{ marginRight: '0.5rem' }}>🎮</span>
+                // TÍTULO <span style={{ color: 'var(--cyber-magenta)' }}>*</span>
               </label>
               <input
                 type="text"
@@ -207,29 +221,34 @@ function VideojuegoForm() {
                 required
                 maxLength={255}
                 disabled={submitting}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid #ccc',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box'
-                }}
+                className="cyber-input"
               />
-              <small style={{ color: '#666', fontSize: '0.85rem' }}>
-                Máximo 255 caracteres
+              <small style={{ 
+                display: 'block',
+                marginTop: '0.5rem',
+                color: 'var(--cyber-text-dim)', 
+                fontSize: '0.8rem',
+                letterSpacing: '1px'
+              }}>
+                MAX 255 CARACTERES
               </small>
             </div>
 
+            {/* ============================================ */}
             {/* CAMPO: Género */}
-            <div style={{ marginBottom: '1.5rem' }}>
+            {/* ============================================ */}
+            <div style={{ marginBottom: '2rem' }}>
               <label style={{
                 display: 'block',
-                marginBottom: '0.5rem',
+                marginBottom: '0.75rem',
+                color: 'var(--cyber-cyan)',
+                fontSize: '0.9rem',
                 fontWeight: 'bold',
-                fontSize: '1rem'
+                textTransform: 'uppercase',
+                letterSpacing: '2px'
               }}>
-                Género <span style={{ color: 'red' }}>*</span>
+                <span style={{ marginRight: '0.5rem' }}>🎯</span>
+                // GÉNERO <span style={{ color: 'var(--cyber-magenta)' }}>*</span>
               </label>
               <input
                 type="text"
@@ -240,29 +259,34 @@ function VideojuegoForm() {
                 required
                 maxLength={100}
                 disabled={submitting}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid #ccc',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box'
-                }}
+                className="cyber-input"
               />
-              <small style={{ color: '#666', fontSize: '0.85rem' }}>
-                Máximo 100 caracteres
+              <small style={{ 
+                display: 'block',
+                marginTop: '0.5rem',
+                color: 'var(--cyber-text-dim)', 
+                fontSize: '0.8rem',
+                letterSpacing: '1px'
+              }}>
+                MAX 100 CARACTERES
               </small>
             </div>
 
+            {/* ============================================ */}
             {/* CAMPO: Fecha de Lanzamiento */}
-            <div style={{ marginBottom: '1.5rem' }}>
+            {/* ============================================ */}
+            <div style={{ marginBottom: '2.5rem' }}>
               <label style={{
                 display: 'block',
-                marginBottom: '0.5rem',
+                marginBottom: '0.75rem',
+                color: 'var(--cyber-cyan)',
+                fontSize: '0.9rem',
                 fontWeight: 'bold',
-                fontSize: '1rem'
+                textTransform: 'uppercase',
+                letterSpacing: '2px'
               }}>
-                Fecha de Lanzamiento <span style={{ color: 'red' }}>*</span>
+                <span style={{ marginRight: '0.5rem' }}>📅</span>
+                // FECHA DE LANZAMIENTO <span style={{ color: 'var(--cyber-magenta)' }}>*</span>
               </label>
               <input
                 type="date"
@@ -271,149 +295,208 @@ function VideojuegoForm() {
                 onChange={handleChange}
                 required
                 disabled={submitting}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid #ccc',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box'
-                }}
+                className="cyber-input"
               />
             </div>
 
+            {/* Divisor */}
+            <div className="cyber-divider" style={{ margin: '2.5rem 0' }} />
+
+            {/* ============================================ */}
             {/* CAMPO: Plataformas (Checkboxes) */}
-            <div style={{ marginBottom: '2rem' }}>
+            {/* ============================================ */}
+            <div style={{ marginBottom: '2.5rem' }}>
               <label style={{
                 display: 'block',
-                marginBottom: '1rem',
+                marginBottom: '1.5rem',
+                color: 'var(--cyber-magenta)',
+                fontSize: '1rem',
                 fontWeight: 'bold',
-                fontSize: '1rem'
+                textTransform: 'uppercase',
+                letterSpacing: '2px'
               }}>
-                Plataformas
+                <span style={{ marginRight: '0.5rem' }}>🕹️</span>
+                // PLATAFORMAS DISPONIBLES
               </label>
               
               {/* Grid de checkboxes */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                gap: '0.75rem',
-                padding: '1rem',
-                backgroundColor: '#f9f9f9',
-                borderRadius: '6px'
+                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                gap: '1rem',
+                padding: '1.5rem',
+                background: 'rgba(10, 14, 39, 0.6)',
+                border: '1px solid rgba(0, 243, 255, 0.2)',
+                borderRadius: '8px'
               }}>
-                {/* Mapear cada plataforma a un checkbox */}
-                {plataformas.map(plataforma => (
-                  <label
-                    key={plataforma.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      cursor: 'pointer',
-                      padding: '0.5rem',
-                      borderRadius: '4px',
-                      backgroundColor: formData.plataformas.includes(plataforma.id) 
-                        ? '#e3f2fd' 
-                        : 'transparent',
-                      transition: 'background-color 0.2s'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!formData.plataformas.includes(plataforma.id)) {
-                        e.currentTarget.style.backgroundColor = '#f5f5f5';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!formData.plataformas.includes(plataforma.id)) {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }
-                    }}
-                  >
-                    {/* Checkbox */}
-                    <input
-                      type="checkbox"
-                      checked={formData.plataformas.includes(plataforma.id)}
-                      onChange={() => handlePlataformaToggle(plataforma.id)}
-                      disabled={submitting}
+                {plataformas.map(plataforma => {
+                  const isSelected = formData.plataformas.includes(plataforma.id);
+                  
+                  return (
+                    <label
+                      key={plataforma.id}
                       style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem',
                         cursor: 'pointer',
-                        width: '18px',
-                        height: '18px'
+                        padding: '1rem',
+                        background: isSelected 
+                          ? 'rgba(0, 243, 255, 0.1)' 
+                          : 'rgba(26, 31, 58, 0.6)',
+                        border: isSelected
+                          ? '2px solid var(--cyber-cyan)'
+                          : '2px solid transparent',
+                        borderRadius: '6px',
+                        transition: 'all 0.3s ease',
+                        clipPath: 'polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)'
                       }}
-                    />
-                    
-                    {/* Texto del checkbox */}
-                    <span style={{ flex: 1 }}>
-                      <strong>{plataforma.nombre}</strong>
-                      <br />
-                      <small style={{ color: '#666' }}>
-                        {plataforma.fabricante}
-                      </small>
-                    </span>
-                  </label>
-                ))}
+                      onMouseEnter={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.background = 'rgba(26, 31, 58, 0.8)';
+                          e.currentTarget.style.borderColor = 'rgba(0, 243, 255, 0.3)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.background = 'rgba(26, 31, 58, 0.6)';
+                          e.currentTarget.style.borderColor = 'transparent';
+                        }
+                      }}
+                    >
+                      {/* Checkbox Custom */}
+                      <div style={{
+                        width: '24px',
+                        height: '24px',
+                        border: '2px solid var(--cyber-cyan)',
+                        borderRadius: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: isSelected ? 'var(--cyber-cyan)' : 'transparent',
+                        transition: 'all 0.2s ease',
+                        flexShrink: 0
+                      }}>
+                        {isSelected && (
+                          <span style={{ color: 'var(--cyber-dark)', fontSize: '1rem' }}>
+                            ✓
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Input oculto real */}
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handlePlataformaToggle(plataforma.id)}
+                        disabled={submitting}
+                        style={{ display: 'none' }}
+                      />
+                      
+                      {/* Texto */}
+                      <div style={{ flex: 1 }}>
+                        <div style={{
+                          color: isSelected ? 'var(--cyber-cyan)' : 'var(--cyber-text)',
+                          fontWeight: 'bold',
+                          fontSize: '1rem',
+                          marginBottom: '0.25rem'
+                        }}>
+                          {plataforma.nombre}
+                        </div>
+                        <div style={{
+                          color: 'var(--cyber-text-dim)',
+                          fontSize: '0.85rem'
+                        }}>
+                          {plataforma.fabricante}
+                        </div>
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
               
-              {/* Contador de plataformas seleccionadas */}
-              <small style={{
-                display: 'block',
-                marginTop: '0.5rem',
-                color: '#666',
-                fontSize: '0.85rem'
+              {/* Contador */}
+              <div style={{
+                marginTop: '1rem',
+                textAlign: 'center'
               }}>
-                {formData.plataformas.length} plataforma(s) seleccionada(s)
-              </small>
+                <span className="cyber-badge" style={{
+                  borderColor: 'var(--cyber-cyan)',
+                  color: 'var(--cyber-cyan)',
+                  fontSize: '0.9rem'
+                }}>
+                  {formData.plataformas.length} SELECCIONADA(S)
+                </span>
+              </div>
             </div>
 
+            {/* Divisor */}
+            <div className="cyber-divider" style={{ margin: '2.5rem 0' }} />
+
+            {/* ============================================ */}
             {/* BOTONES DE ACCIÓN */}
+            {/* ============================================ */}
             <div style={{
               display: 'flex',
               gap: '1rem',
-              justifyContent: 'flex-end'
+              justifyContent: 'center',
+              flexWrap: 'wrap'
             }}>
               {/* Botón Cancelar */}
               <button
                 type="button"
                 onClick={() => navigate('/videojuegos')}
                 disabled={submitting}
+                className="cyber-button"
                 style={{
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: '#6c757d',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
+                  padding: '1rem 2.5rem',
                   fontSize: '1rem',
-                  fontWeight: 'bold',
-                  cursor: submitting ? 'not-allowed' : 'pointer',
-                  opacity: submitting ? 0.6 : 1
+                  borderColor: 'var(--cyber-text-dim)',
+                  color: 'var(--cyber-text-dim)',
+                  opacity: submitting ? 0.5 : 1,
+                  cursor: submitting ? 'not-allowed' : 'pointer'
                 }}
               >
-                ❌ Cancelar
+                ❌ CANCELAR
               </button>
               
               {/* Botón Guardar */}
               <button
                 type="submit"
                 disabled={submitting}
+                className="cyber-button"
                 style={{
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: '#4CAF50',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
+                  padding: '1rem 2.5rem',
                   fontSize: '1rem',
-                  fontWeight: 'bold',
+                  opacity: submitting ? 0.6 : 1,
                   cursor: submitting ? 'not-allowed' : 'pointer',
-                  opacity: submitting ? 0.6 : 1
+                  position: 'relative',
+                  overflow: 'hidden'
                 }}
               >
-                {submitting 
-                  ? '⏳ Guardando...' 
-                  : isEditMode 
-                    ? '💾 Actualizar' 
-                    : '✅ Crear'
-                }
+                {submitting ? (
+                  <span className="cyber-loading">⟳ PROCESANDO...</span>
+                ) : (
+                  <>
+                    {isEditMode ? '💾 ACTUALIZAR' : '✅ CREAR'}
+                  </>
+                )}
               </button>
+            </div>
+
+            {/* Info de ayuda */}
+            <div style={{
+              marginTop: '2rem',
+              padding: '1rem',
+              background: 'rgba(0, 243, 255, 0.05)',
+              border: '1px solid rgba(0, 243, 255, 0.2)',
+              borderRadius: '6px',
+              fontSize: '0.85rem',
+              color: 'var(--cyber-text-dim)',
+              textAlign: 'center'
+            }}>
+              <span style={{ color: 'var(--cyber-cyan)' }}>💡</span> Los campos marcados con{' '}
+              <span style={{ color: 'var(--cyber-magenta)' }}>*</span> son obligatorios
             </div>
           </form>
         </div>

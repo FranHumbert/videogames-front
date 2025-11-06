@@ -1,59 +1,120 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Layout from '../layout/Layout';
 import Loading from '../common/Loading';
+import ErrorMessage from '../common/ErrorMessage';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+
 function Dashboard() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   
-  const [stats, setStats] = useState({
-    videojuegos: 0,
-    plataformas: 0
-  });
-  
-  const [recientes, setRecientes] = useState([]);
-  
-  const [popular, setPopular] = useState(null);
-  
+  const [stats, setStats] = useState(null);
+  const [videojuegosRecientes, setVideojuegosRecientes] = useState([]);
+  const [plataformaMasPopular, setPlataformaMasPopular] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    loadDashboardData();
+    // ⭐ CREAR ABORT CONTROLLER para cancelar peticiones
+    const abortController = new AbortController();
+    
+    loadDashboardData(abortController.signal);
+    
+    // ⭐ CLEANUP: Cancelar peticiones al desmontar
+    return () => {
+      abortController.abort();
+    };
   }, []);
 
-  // FUNCIÓN: Cargar datos del dashboard
-  const loadDashboardData = async () => {
+  const loadDashboardData = async (signal) => {
     try {
-      // PETICIONES EN PARALELO
-      const [
-        videojuegosRes,    // Respuesta de GET /videojuegos
-        plataformasRes,    // Respuesta de GET /plataformas
-        recientesRes,      // Respuesta de GET /videojuegos/recientes
-        popularRes         // Respuesta de GET /plataformas/mas-popular
-      ] = await Promise.all([
-        api.get('/videojuegos'),
-        api.get('/plataformas'),
-        api.get('/videojuegos/recientes'),
-        api.get('/plataformas/mas-popular')
+      setLoading(true);
+      setError('');
+      
+      console.log('🔄 Cargando dashboard...');
+      
+      // ⭐ PASAR signal a las peticiones
+      const [videojuegosRes, videojuegosRecientesRes, plataformasRes, plataformaPopularRes] = await Promise.allSettled([
+        api.get('/videojuegos', { signal }),
+        api.get('/videojuegos/recientes', { signal }),
+        api.get('/plataformas', { signal }),
+        api.get('/plataformas/mas-popular', { signal })
       ]);
       
-      setStats({
-        videojuegos: videojuegosRes.data.data.length,
-        
-        plataformas: plataformasRes.data.data.length
-      });
+      // Si la petición fue cancelada, no hacer nada
+      if (signal?.aborted) {
+        console.log('⚠️ Peticiones canceladas');
+        return;
+      }
       
-      // Guardar videojuegos recientes
-      setRecientes(recientesRes.data.data);
-      // Ya vienen solo 3 del endpoint /recientes
+      // Procesar videojuegos
+      let todosLosVideojuegos = [];
+      if (videojuegosRes.status === 'fulfilled') {
+        todosLosVideojuegos = videojuegosRes.value.data.data;
+        console.log('✅ Videojuegos cargados:', todosLosVideojuegos.length);
+      } else {
+        console.error('❌ Error al cargar videojuegos:', videojuegosRes.reason?.message || videojuegosRes.reason);
+      }
       
-      // Guardar plataforma popular
-      setPopular(popularRes.data.data);
+      // Procesar videojuegos recientes
+      let videojuegosRecientes = [];
+      if (videojuegosRecientesRes.status === 'fulfilled') {
+        videojuegosRecientes = videojuegosRecientesRes.value.data.data;
+        console.log('✅ Videojuegos recientes cargados:', videojuegosRecientes.length);
+      } else {
+        console.error('❌ Error al cargar videojuegos recientes:', videojuegosRecientesRes.reason?.message || videojuegosRecientesRes.reason);
+      }
+      
+      // Procesar plataformas
+      let todasLasPlataformas = [];
+      if (plataformasRes.status === 'fulfilled') {
+        todasLasPlataformas = plataformasRes.value.data.data;
+        console.log('✅ Plataformas cargadas:', todasLasPlataformas.length);
+      } else {
+        console.error('❌ Error al cargar plataformas:', plataformasRes.reason?.message || plataformasRes.reason);
+      }
+      
+      // Procesar plataforma popular
+      let plataformaPopular = null;
+      if (plataformaPopularRes.status === 'fulfilled') {
+        plataformaPopular = plataformaPopularRes.value.data.data;
+        console.log('✅ Plataforma popular cargada:', plataformaPopular?.nombre);
+      } else {
+        console.error('❌ Error al cargar plataforma popular:', plataformaPopularRes.reason?.message || plataformaPopularRes.reason);
+      }
+      
+      // Calcular estadísticas
+      const statsCalculadas = {
+        total_videojuegos: todosLosVideojuegos.length,
+        total_plataformas: todasLasPlataformas.length
+      };
+      
+      // Actualizar estados
+      setStats(statsCalculadas);
+      setVideojuegosRecientes(videojuegosRecientes);
+      setPlataformaMasPopular(plataformaPopular);
+      
+      console.log('✅ Dashboard cargado correctamente');
+      
+      // Si TODO falló, mostrar error
+      if (videojuegosRes.status === 'rejected' && 
+          videojuegosRecientesRes.status === 'rejected' && 
+          plataformasRes.status === 'rejected' && 
+          plataformaPopularRes.status === 'rejected') {
+        throw new Error('No se pudo conectar con el servidor');
+      }
       
     } catch (error) {
-      console.error('Error al cargar datos del dashboard:', error);
+      // ⭐ IGNORAR errores de cancelación
+      if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
+        console.log('⚠️ Carga cancelada');
+        return;
+      }
       
+      console.error('❌ Error general en loadDashboardData:', error);
+      setError('Error al cargar datos del dashboard. Verifica que el backend esté corriendo.');
     } finally {
       setLoading(false);
     }
@@ -62,342 +123,430 @@ function Dashboard() {
   if (loading) {
     return (
       <Layout>
-        <Loading message="Cargando dashboard..." />
+        <Loading message="Inicializando sistema..." />
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <ErrorMessage message={error} onRetry={() => loadDashboardData()} />
       </Layout>
     );
   }
 
   return (
     <Layout>
-      <div>
-        {/* ENCABEZADO: Saludo personalizado */}
-        <div style={{ marginBottom: '3rem' }}>
+      <div className="cyber-fade-in" style={{ padding: '2rem' }}>
+        
+        {/* HEADER: Bienvenida */}
+        <div style={{
+          marginBottom: '3rem',
+          textAlign: 'center',
+          position: 'relative'
+        }}>
           <h1 style={{
-            fontSize: '2.5rem',
-            marginBottom: '0.5rem'
+            fontSize: '3rem',
+            fontWeight: '900',
+            textTransform: 'uppercase',
+            letterSpacing: '5px',
+            background: 'linear-gradient(45deg, var(--cyber-cyan), var(--cyber-magenta), var(--cyber-yellow))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            textShadow: '0 0 40px rgba(0, 243, 255, 0.5)',
+            marginBottom: '1rem',
+            animation: 'fadeIn 0.8s ease'
           }}>
-            👋 Bienvenido, {user?.name || 'Usuario'}!
+            BIENVENIDO, {user?.name?.toUpperCase()}
           </h1>
+          
           <p style={{
-            color: '#666',
-            fontSize: '1.2rem'
+            color: 'var(--cyber-text-dim)',
+            fontSize: '1.2rem',
+            textTransform: 'uppercase',
+            letterSpacing: '3px',
+            animation: 'fadeIn 1s ease'
           }}>
-            Dashboard de Gestión de Videojuegos y Plataformas
+            // Sistema de Gestión de Videojuegos
           </p>
+
+          <div style={{
+            width: '200px',
+            height: '2px',
+            background: 'linear-gradient(90deg, transparent, var(--cyber-cyan), transparent)',
+            margin: '1.5rem auto',
+            boxShadow: '0 0 10px var(--cyber-cyan)'
+          }} />
         </div>
 
-        {/* SECCIÓN: Estadísticas */}
+        {/* SECCIÓN 1: TOTALES */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '1.5rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '2rem',
           marginBottom: '3rem'
         }}>
           
-          {/* TARJETA: Videojuegos */}
-          <div style={{
-            backgroundColor: 'white',
+          {/* Total Videojuegos */}
+          <div className="cyber-card cyber-hover-lift" style={{
             padding: '2rem',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             textAlign: 'center',
-            border: '3px solid #e3f2fd',
-            // Transición suave al hacer hover
-            transition: 'transform 0.2s, box-shadow 0.2s'
-          }}
-          // Efecto hover: Elevar tarjeta
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-          }}
-          >
-            {/* Icono */}
+            background: 'linear-gradient(135deg, rgba(0, 243, 255, 0.1) 0%, rgba(26, 31, 58, 0.8) 100%)',
+            borderColor: 'var(--cyber-cyan)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
             <div style={{
-              fontSize: '4rem',
-              marginBottom: '0.5rem'
+              position: 'absolute',
+              top: '-20px',
+              right: '-20px',
+              fontSize: '8rem',
+              opacity: 0.1,
+              filter: 'blur(2px)'
             }}>
               🎮
             </div>
             
-            {/* Número (estadística) */}
-            <h2 style={{
-              fontSize: '3rem',
-              margin: '0.5rem 0',
-              color: '#1976d2'
+            <div style={{
+              fontSize: '5rem',
+              marginBottom: '1rem',
+              filter: 'drop-shadow(0 0 10px var(--cyber-cyan))'
             }}>
-              {stats.videojuegos}
-            </h2>
+              🎮
+            </div>
             
-            {/* Descripción */}
-            <p style={{
-              color: '#666',
-              fontSize: '1.1rem',
-              marginBottom: '1rem'
+            <div style={{
+              fontSize: '4rem',
+              fontWeight: '900',
+              color: 'var(--cyber-cyan)',
+              fontFamily: 'Orbitron, sans-serif',
+              textShadow: '0 0 20px var(--cyber-cyan)',
+              marginBottom: '0.5rem'
             }}>
-              Videojuegos Registrados
-            </p>
+              {stats?.total_videojuegos || 0}
+            </div>
             
-            {/* Botón/Link */}
-            <Link
-              to="/videojuegos"
-              style={{
-                display: 'inline-block',
-                padding: '0.5rem 1rem',
-                backgroundColor: '#1976d2',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '6px',
-                fontWeight: 'bold',
-                transition: 'background-color 0.2s'
-              }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#1565c0'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#1976d2'}
-            >
-              Ver Todos →
-            </Link>
+            <div style={{
+              color: 'var(--cyber-text)',
+              fontSize: '1.2rem',
+              textTransform: 'uppercase',
+              letterSpacing: '2px',
+              fontWeight: 'bold'
+            }}>
+              // TOTAL VIDEOJUEGOS
+            </div>
+
+            <div style={{
+              width: '60%',
+              height: '3px',
+              background: 'var(--cyber-cyan)',
+              margin: '1rem auto 0',
+              boxShadow: '0 0 10px var(--cyber-cyan)'
+            }} />
           </div>
 
-          {/* TARJETA: Plataformas */}
-          <div style={{
-            backgroundColor: 'white',
+          {/* Total Plataformas */}
+          <div className="cyber-card cyber-hover-lift" style={{
             padding: '2rem',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             textAlign: 'center',
-            border: '3px solid #f3e5f5',
-            transition: 'transform 0.2s, box-shadow 0.2s'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-          }}
-          >
-            <div style={{ fontSize: '4rem', marginBottom: '0.5rem' }}>
+            background: 'linear-gradient(135deg, rgba(255, 0, 110, 0.1) 0%, rgba(26, 31, 58, 0.8) 100%)',
+            borderColor: 'var(--cyber-magenta)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '-20px',
+              right: '-20px',
+              fontSize: '8rem',
+              opacity: 0.1,
+              filter: 'blur(2px)'
+            }}>
               🕹️
             </div>
-            <h2 style={{
-              fontSize: '3rem',
-              margin: '0.5rem 0',
-              color: '#7b1fa2'
+            
+            <div style={{
+              fontSize: '5rem',
+              marginBottom: '1rem',
+              filter: 'drop-shadow(0 0 10px var(--cyber-magenta))'
             }}>
-              {stats.plataformas}
-            </h2>
-            <p style={{
-              color: '#666',
-              fontSize: '1.1rem',
-              marginBottom: '1rem'
+              🕹️
+            </div>
+            
+            <div style={{
+              fontSize: '4rem',
+              fontWeight: '900',
+              color: 'var(--cyber-magenta)',
+              fontFamily: 'Orbitron, sans-serif',
+              textShadow: '0 0 20px var(--cyber-magenta)',
+              marginBottom: '0.5rem'
             }}>
-              Plataformas Disponibles
-            </p>
-            <Link
-              to="/plataformas"
-              style={{
-                display: 'inline-block',
-                padding: '0.5rem 1rem',
-                backgroundColor: '#7b1fa2',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '6px',
-                fontWeight: 'bold',
-                transition: 'background-color 0.2s'
-              }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#6a1b9a'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#7b1fa2'}
-            >
-              Ver Todas →
-            </Link>
+              {stats?.total_plataformas || 0}
+            </div>
+            
+            <div style={{
+              color: 'var(--cyber-text)',
+              fontSize: '1.2rem',
+              textTransform: 'uppercase',
+              letterSpacing: '2px',
+              fontWeight: 'bold'
+            }}>
+              // TOTAL PLATAFORMAS
+            </div>
+
+            <div style={{
+              width: '60%',
+              height: '3px',
+              background: 'var(--cyber-magenta)',
+              margin: '1rem auto 0',
+              boxShadow: '0 0 10px var(--cyber-magenta)'
+            }} />
           </div>
         </div>
 
-        {/* SECCIÓN: Videojuegos Recientes */}
+        <div className="cyber-divider" style={{ margin: '3rem 0' }} />
+
+        {/* SECCIÓN 2: VIDEOJUEGOS RECIENTES */}
         <div style={{ marginBottom: '3rem' }}>
-          <h2 style={{
-            fontSize: '1.8rem',
-            marginBottom: '1rem'
-          }}>
-            🆕 Últimos Videojuegos Agregados
-          </h2>
-          
-          {/* Grid de tarjetas */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: '1.5rem'
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '2rem'
           }}>
-            {recientes.map(game => (
-              <Link
-                key={game.id}
-                to={`/videojuegos/${game.id}`}
-                style={{
-                  textDecoration: 'none',
-                  color: 'inherit'
-                }}
-              >
-                <div style={{
-                  backgroundColor: 'white',
-                  padding: '1.5rem',
-                  borderRadius: '12px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  cursor: 'pointer',
-                  height: '100%'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                }}
+            <h2 className="cyber-subtitle">
+              🎮 ÚLTIMOS VIDEOJUEGOS AÑADIDOS
+            </h2>
+            
+            <button
+              onClick={() => navigate('/videojuegos')}
+              className="cyber-button"
+              style={{
+                padding: '0.5rem 1.5rem',
+                fontSize: '0.9rem'
+              }}
+            >
+              VER TODOS ▶
+            </button>
+          </div>
+
+          {videojuegosRecientes.length > 0 ? (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '1.5rem'
+            }}>
+              {videojuegosRecientes.map(game => (
+                <div
+                  key={game.id}
+                  className="cyber-card cyber-hover-lift"
+                  onClick={() => navigate(`/videojuegos/${game.id}`)}
+                  style={{
+                    cursor: 'pointer',
+                    padding: '1.5rem',
+                    borderColor: 'var(--cyber-cyan)',
+                    background: 'rgba(26, 31, 58, 0.6)'
+                  }}
                 >
-                  {/* Título del juego */}
                   <h3 style={{
-                    marginBottom: '0.5rem',
-                    fontSize: '1.3rem'
+                    fontSize: '1.3rem',
+                    marginBottom: '0.75rem',
+                    color: 'var(--cyber-cyan)',
+                    fontWeight: 'bold'
                   }}>
                     {game.titulo}
                   </h3>
                   
-                  {/* Género y año */}
-                  <p style={{
-                    color: '#666',
-                    marginBottom: '1rem'
-                  }}>
-                    <strong>{game.genero}</strong>
-                    {' • '}
-                    {new Date(game.anio_lanzamiento).getFullYear()}
-                  </p>
-                  
-                  {/* Plataformas (badges) */}
                   <div style={{
                     display: 'flex',
-                    gap: '0.5rem',
+                    gap: '1rem',
+                    marginBottom: '0.75rem',
                     flexWrap: 'wrap'
                   }}>
-                    {game.plataformas?.slice(0, 3).map(plat => (
-                      <span
-                        key={plat.id}
-                        style={{
-                          backgroundColor: '#e3f2fd',
-                          color: '#1976d2',
-                          padding: '0.25rem 0.75rem',
-                          borderRadius: '12px',
-                          fontSize: '0.85rem',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        {plat.nombre}
-                      </span>
-                    ))}
+                    <span className="cyber-badge" style={{
+                      borderColor: 'var(--cyber-magenta)',
+                      color: 'var(--cyber-magenta)'
+                    }}>
+                      {game.genero}
+                    </span>
                     
-                    {game.plataformas?.length > 3 && (
-                      <span style={{
-                        color: '#666',
-                        padding: '0.25rem 0.5rem',
-                        fontSize: '0.85rem'
-                      }}>
-                        +{game.plataformas.length - 3} más
-                      </span>
-                    )}
+                    <span style={{
+                      color: 'var(--cyber-text-dim)',
+                      fontSize: '0.9rem'
+                    }}>
+                      📅 {new Date(game.anio_lanzamiento).getFullYear()}
+                    </span>
                   </div>
+
+                  {game.plataformas && game.plataformas.length > 0 && (
+                    <div style={{
+                      display: 'flex',
+                      gap: '0.5rem',
+                      flexWrap: 'wrap'
+                    }}>
+                      {game.plataformas.slice(0, 3).map(plat => (
+                        <span
+                          key={plat.id}
+                          style={{
+                            fontSize: '0.8rem',
+                            padding: '0.25rem 0.5rem',
+                            background: 'rgba(0, 243, 255, 0.1)',
+                            color: 'var(--cyber-cyan)',
+                            border: '1px solid rgba(0, 243, 255, 0.3)'
+                          }}
+                        >
+                          {plat.nombre}
+                        </span>
+                      ))}
+                      {game.plataformas.length > 3 && (
+                        <span style={{
+                          fontSize: '0.8rem',
+                          color: 'var(--cyber-text-dim)'
+                        }}>
+                          +{game.plataformas.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-        {/* SECCIÓN: Plataforma Más Popular */}
-        {popular && (
-          <div style={{
-            backgroundColor: 'white',
-            padding: '3rem',
-            borderRadius: '12px',
-            textAlign: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            border: '3px solid #fff3e0'
-          }}>
-            <h2 style={{
-              fontSize: '1.8rem',
-              marginBottom: '1rem',
-              color: '#333'
-            }}>
-              🏆 Plataforma Más Popular
-            </h2>
-            
-            {/* Icono grande */}
-            <div style={{
-              fontSize: '5rem',
-              marginBottom: '1rem'
-            }}>
-              🕹️
+              ))}
             </div>
-            
-            {/* Nombre de la plataforma */}
-            <h3 style={{
-              fontSize: '2.5rem',
-              marginBottom: '0.5rem',
-              color: '#f57c00'
+          ) : (
+            <div className="cyber-card" style={{
+              padding: '3rem',
+              textAlign: 'center',
+              borderColor: 'var(--cyber-text-dim)'
             }}>
-              {popular.nombre}
-            </h3>
-            
-            {/* Fabricante */}
-            <p style={{
-              color: '#666',
-              fontSize: '1.3rem',
-              marginBottom: '1rem'
-            }}>
-              {popular.fabricante}
-            </p>
-            
-            {/* Cantidad de videojuegos */}
-            <div style={{
-              display: 'inline-block',
-              padding: '1rem 2rem',
-              backgroundColor: '#fff3e0',
-              borderRadius: '12px',
-              marginBottom: '1.5rem'
-            }}>
-              <p style={{
-                fontSize: '2rem',
-                fontWeight: 'bold',
-                color: '#f57c00',
-                margin: 0
-              }}>
-                {popular.videojuegos_count} videojuegos
+              <div style={{ fontSize: '4rem', marginBottom: '1rem', opacity: 0.3 }}>
+                📭
+              </div>
+              <p style={{ color: 'var(--cyber-text-dim)', fontSize: '1.1rem' }}>
+                No hay videojuegos recientes
               </p>
             </div>
-            
-            {/* Botón para ver detalles */}
-            <br />
-            <Link
-              to={`/plataformas/${popular.id}`}
+          )}
+        </div>
+
+        <div className="cyber-divider" style={{ margin: '3rem 0' }} />
+
+        {/* SECCIÓN 3: PLATAFORMA MÁS POPULAR */}
+        <div>
+          <h2 className="cyber-subtitle" style={{
+            color: 'var(--cyber-yellow)',
+            marginBottom: '2rem'
+          }}>
+            👑 PLATAFORMA MÁS POPULAR
+          </h2>
+
+          {plataformaMasPopular ? (
+            <div 
+              className="cyber-card cyber-hover-lift"
+              onClick={() => navigate(`/plataformas/${plataformaMasPopular.id}`)}
               style={{
-                display: 'inline-block',
-                padding: '0.75rem 2rem',
-                backgroundColor: '#ff9800',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '6px',
-                fontWeight: 'bold',
-                fontSize: '1.1rem',
-                transition: 'background-color 0.2s'
+                padding: '2.5rem',
+                background: 'linear-gradient(135deg, rgba(255, 190, 11, 0.1) 0%, rgba(26, 31, 58, 0.8) 100%)',
+                borderColor: 'var(--cyber-yellow)',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'hidden'
               }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#f57c00'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#ff9800'}
             >
-              Ver Detalles Completos
-            </Link>
-          </div>
-        )}
+              <div style={{
+                position: 'absolute',
+                top: '-30px',
+                right: '-30px',
+                fontSize: '12rem',
+                opacity: 0.05
+              }}>
+                👑
+              </div>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'auto 1fr auto',
+                gap: '2rem',
+                alignItems: 'center',
+                position: 'relative',
+                zIndex: 1
+              }}>
+                
+                <div style={{
+                  fontSize: '6rem',
+                  filter: 'drop-shadow(0 0 20px var(--cyber-yellow))'
+                }}>
+                  👑
+                </div>
+
+                <div>
+                  <h3 style={{
+                    fontSize: '2.5rem',
+                    color: 'var(--cyber-yellow)',
+                    fontWeight: '900',
+                    marginBottom: '0.5rem',
+                    fontFamily: 'Orbitron, sans-serif',
+                    textShadow: '0 0 20px var(--cyber-yellow)'
+                  }}>
+                    {plataformaMasPopular.nombre}
+                  </h3>
+                  
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    marginBottom: '1rem',
+                    flexWrap: 'wrap'
+                  }}>
+                    <span style={{
+                      color: 'var(--cyber-text-dim)',
+                      fontSize: '1.2rem'
+                    }}>
+                      🏭 {plataformaMasPopular.fabricante}
+                    </span>
+                  </div>
+
+                  <span className="cyber-badge" style={{
+                    borderColor: 'var(--cyber-yellow)',
+                    color: 'var(--cyber-yellow)',
+                    fontSize: '1rem',
+                    padding: '0.5rem 1rem'
+                  }}>
+                    🎮 {plataformaMasPopular.videojuegos_count || 0} VIDEOJUEGOS DISPONIBLES
+                  </span>
+                </div>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/plataformas/${plataformaMasPopular.id}`);
+                  }}
+                  className="cyber-button yellow"
+                  style={{
+                    padding: '1rem 2rem',
+                    fontSize: '1rem',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  VER DETALLES ▶
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="cyber-card" style={{
+              padding: '3rem',
+              textAlign: 'center',
+              borderColor: 'var(--cyber-text-dim)'
+            }}>
+              <div style={{ fontSize: '4rem', marginBottom: '1rem', opacity: 0.3 }}>
+                📭
+              </div>
+              <p style={{ color: 'var(--cyber-text-dim)', fontSize: '1.1rem' }}>
+                No hay datos de plataforma popular
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </Layout>
   );

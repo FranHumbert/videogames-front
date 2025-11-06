@@ -1,90 +1,85 @@
 function ErrorMessage({ message, onRetry }) {
-    
-    return (
-      <div style={{
-        // ESTILOS: Caja de error llamativa
-        
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '400px',
+      gap: '2rem',
+      padding: '2rem'
+    }}>
+      <div className="cyber-card" style={{
+        maxWidth: '600px',
         padding: '3rem',
         textAlign: 'center',
-        
-        // Colores de error (rojo)
-        backgroundColor: '#ffebee',
-        border: '2px solid #ef5350',
-        
-        borderRadius: '12px',
-        margin: '2rem auto',
-        maxWidth: '600px',
-        
-        // Sombra sutil
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        borderColor: 'var(--cyber-magenta)',
+        background: 'rgba(255, 0, 110, 0.05)'
       }}>
-        
-        {/* ICONO DE ERROR */}
+        {/* Icono de error */}
         <div style={{
-          fontSize: '4rem',
-          marginBottom: '1rem',
-          
-          // Animación de "sacudida" (shake)
-          animation: 'shake 0.5s'
+          fontSize: '5rem',
+          marginBottom: '2rem',
+          filter: 'drop-shadow(0 0 20px var(--cyber-magenta))',
+          animation: 'pulse 2s infinite'
         }}>
-          ❌
+          ⚠️
         </div>
-        
-        {/* TÍTULO */}
+
+        {/* Mensaje de error */}
         <h2 style={{
-          color: '#c62828',
+          fontSize: '2rem',
+          color: 'var(--cyber-magenta)',
+          textTransform: 'uppercase',
+          letterSpacing: '3px',
           marginBottom: '1rem',
-          fontSize: '1.5rem'
+          fontWeight: '900'
         }}>
-          ¡Ups! Algo salió mal
+          ERROR DEL SISTEMA
         </h2>
-        
-        {/* MENSAJE DE ERROR */}
+
+        <div className="cyber-divider" style={{
+          background: 'linear-gradient(90deg, transparent, var(--cyber-magenta), transparent)',
+          margin: '1.5rem 0'
+        }} />
+
         <p style={{
           fontSize: '1.1rem',
-          color: '#666',
-          marginBottom: '1.5rem',
-          lineHeight: '1.5'
+          color: 'var(--cyber-text)',
+          marginBottom: '2rem',
+          lineHeight: '1.6'
         }}>
-          {message}
+          {message || 'Ha ocurrido un error inesperado'}
         </p>
-        
-        {/* BOTÓN REINTENTAR (Condicional) */}        
+
+        {/* Botón reintentar */}
         {onRetry && (
           <button
             onClick={onRetry}
-            style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#2196F3',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '1rem',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              
-              // Efecto hover (cambio de color al pasar mouse)
-              transition: 'background-color 0.2s'
-            }}
-            // Efecto hover inline (alternativa)
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#1976d2'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = '#2196F3'}
+            className="cyber-button magenta"
           >
-            🔄 Reintentar
+            ⟳ REINTENTAR
           </button>
         )}
-        
-        {/* ANIMACIÓN DE SACUDIDA */}
-        <style>{`
-          @keyframes shake {
-            /* Sacudir el icono de izquierda a derecha */
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-            20%, 40%, 60%, 80% { transform: translateX(10px); }
-          }
-        `}</style>
+
+        {/* Info técnica decorativa */}
+        <div style={{
+          marginTop: '2rem',
+          padding: '1rem',
+          background: 'rgba(0, 0, 0, 0.3)',
+          border: '1px solid rgba(255, 0, 110, 0.2)',
+          fontSize: '0.75rem',
+          color: 'var(--cyber-text-dim)',
+          fontFamily: 'monospace',
+          textAlign: 'left'
+        }}>
+          <div>// ERROR CODE: SYS_ERR_001</div>
+          <div>// TIMESTAMP: {new Date().toISOString()}</div>
+          <div>// STATUS: CONNECTION_FAILED</div>
+        </div>
       </div>
-    );
-  }
-  
-  export default ErrorMessage;
+    </div>
+  );
+}
+
+export default ErrorMessage;
