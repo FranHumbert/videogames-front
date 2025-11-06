@@ -7,26 +7,24 @@ import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 function VideojuegoDetail() {
-  const { id } = useParams();  
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();  
-  const [videojuego, setVideojuego] = useState(null);  
-  const [loading, setLoading] = useState(true);  
+  const { isAdmin } = useAuth();
+  
+  const [videojuego, setVideojuego] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     fetchVideojuego();
   }, [id]);
 
-  // FUNCIÓN: Obtener videojuego
   const fetchVideojuego = async () => {
     try {
       setLoading(true);
       setError('');
       
-      // GET /api/v1/videojuegos/:id
       const response = await api.get(`/videojuegos/${id}`);
-      
       setVideojuego(response.data.data);
       
     } catch (error) {
@@ -42,18 +40,14 @@ function VideojuegoDetail() {
     }
   };
 
-  // FUNCIÓN: Eliminar videojuego
   const handleDelete = async () => {
     if (!window.confirm(`¿Estás seguro de eliminar "${videojuego.titulo}"?`)) {
       return;
     }
 
     try {
-      // DELETE /api/v1/videojuegos/:id
       await api.delete(`/videojuegos/${id}`);
-      
       alert('✅ Videojuego eliminado exitosamente');
-      
       navigate('/videojuegos');
       
     } catch (error) {
@@ -89,166 +83,176 @@ function VideojuegoDetail() {
   if (!videojuego) {
     return (
       <Layout>
-        <div style={{ textAlign: 'center', padding: '4rem' }}>
-          <p>Videojuego no encontrado</p>
-          <button onClick={() => navigate('/videojuegos')}>
-            Volver a la lista
-          </button>
-        </div>
+        <EmptyState
+          icon="❓"
+          message="Videojuego no encontrado"
+          actionText="VOLVER A LA LISTA"
+          onAction={() => navigate('/videojuegos')}
+        />
       </Layout>
     );
   }
 
   return (
     <Layout>
-      <div>
-        {/* HEADER: Botones de navegación */}
+      <div className="cyber-fade-in" style={{ padding: '2rem' }}>
+        
+        {/* ============================================ */}
+        {/* HEADER: Navegación */}
+        {/* ============================================ */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '2rem'
+          marginBottom: '2rem',
+          flexWrap: 'wrap',
+          gap: '1rem'
         }}>
           {/* Botón Volver */}
           <button
             onClick={() => navigate('/videojuegos')}
+            className="cyber-button"
             style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '1rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
+              padding: '0.75rem 1.5rem',
+              fontSize: '0.9rem'
             }}
           >
-            ⬅️ Volver a la lista
+            ⬅️ VOLVER
           </button>
 
-          {/* Botones de Admin (solo si es admin) */}
+          {/* Botones Admin */}
           {isAdmin && (
             <div style={{
               display: 'flex',
-              gap: '0.5rem'
+              gap: '1rem'
             }}>
-              {/* Botón Editar */}
               <button
                 onClick={() => navigate(`/videojuegos/${id}/editar`)}
+                className="cyber-button yellow"
                 style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#FF9800',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                  fontWeight: 'bold'
+                  padding: '0.75rem 1.5rem',
+                  fontSize: '0.9rem'
                 }}
               >
-                ✏️ Editar
+                ✏️ EDITAR
               </button>
               
-              {/* Botón Eliminar */}
               <button
                 onClick={handleDelete}
+                className="cyber-button magenta"
                 style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#f44336',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                  fontWeight: 'bold'
+                  padding: '0.75rem 1.5rem',
+                  fontSize: '0.9rem'
                 }}
               >
-                🗑️ Eliminar
+                🗑️ ELIMINAR
               </button>
             </div>
           )}
         </div>
 
-        {/* TARJETA PRINCIPAL: Detalles del videojuego */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          overflow: 'hidden'
+        {/* ============================================ */}
+        {/* TARJETA PRINCIPAL */}
+        {/* ============================================ */}
+        <div className="cyber-card" style={{
+          borderColor: 'var(--cyber-cyan)',
+          overflow: 'hidden',
+          position: 'relative'
         }}>
           
-          {/* HEADER DE LA TARJETA */}
+          {/* Header con fondo degradado */}
           <div style={{
-            padding: '2rem',
-            backgroundColor: '#1976d2',
-            color: 'white',
-            textAlign: 'center'
+            padding: '3rem 2rem',
+            background: 'linear-gradient(135deg, rgba(0, 243, 255, 0.2) 0%, rgba(26, 31, 58, 0.8) 100%)',
+            borderBottom: '2px solid var(--cyber-cyan)',
+            textAlign: 'center',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
-            {/* Icono grande */}
+            {/* Decoración de fondo */}
             <div style={{
-              fontSize: '5rem',
-              marginBottom: '1rem'
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              fontSize: '15rem',
+              opacity: 0.05,
+              pointerEvents: 'none'
+            }}>
+              🎮
+            </div>
+
+            {/* Icono */}
+            <div style={{
+              fontSize: '6rem',
+              marginBottom: '1.5rem',
+              filter: 'drop-shadow(0 0 30px var(--cyber-cyan))',
+              position: 'relative',
+              zIndex: 1
             }}>
               🎮
             </div>
             
-            {/* Título del videojuego */}
+            {/* Título */}
             <h1 style={{
-              fontSize: '2.5rem',
-              marginBottom: '0.5rem',
-              margin: 0
+              fontSize: '3rem',
+              fontWeight: '900',
+              color: 'var(--cyber-cyan)',
+              textTransform: 'uppercase',
+              letterSpacing: '3px',
+              marginBottom: '1rem',
+              textShadow: '0 0 30px var(--cyber-cyan)',
+              position: 'relative',
+              zIndex: 1
             }}>
               {videojuego.titulo}
             </h1>
             
             {/* Badge de género */}
-            <span style={{
-              display: 'inline-block',
-              marginTop: '1rem',
-              padding: '0.5rem 1.5rem',
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              borderRadius: '20px',
+            <span className="cyber-badge" style={{
+              borderColor: 'var(--cyber-magenta)',
+              color: 'var(--cyber-magenta)',
               fontSize: '1.1rem',
-              fontWeight: 'bold'
+              padding: '0.5rem 1.5rem',
+              display: 'inline-block'
             }}>
               {videojuego.genero}
             </span>
           </div>
 
-          {/* CUERPO DE LA TARJETA: Información */}
-          <div style={{
-            padding: '2rem'
-          }}>
+          {/* Cuerpo de la tarjeta */}
+          <div style={{ padding: '2.5rem' }}>
             
-            {/* SECCIÓN: Información General */}
+            {/* Grid de información */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '1.5rem',
-              marginBottom: '2rem'
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '2rem',
+              marginBottom: '3rem'
             }}>
               
-              {/* Campo: Fecha de Lanzamiento */}
-              <div style={{
+              {/* Fecha de Lanzamiento */}
+              <div className="cyber-card" style={{
                 padding: '1.5rem',
-                backgroundColor: '#f9f9f9',
-                borderRadius: '8px'
+                background: 'rgba(0, 243, 255, 0.05)',
+                borderColor: 'var(--cyber-cyan)'
               }}>
                 <p style={{
-                  color: '#666',
-                  fontSize: '0.9rem',
-                  marginBottom: '0.5rem',
+                  color: 'var(--cyber-text-dim)',
+                  fontSize: '0.85rem',
+                  marginBottom: '0.75rem',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
+                  letterSpacing: '2px',
+                  fontWeight: 'bold'
                 }}>
-                  📅 Fecha de Lanzamiento
+                  📅 // FECHA DE LANZAMIENTO
                 </p>
                 <p style={{
-                  fontSize: '1.3rem',
+                  fontSize: '1.5rem',
                   fontWeight: 'bold',
-                  margin: 0
+                  color: 'var(--cyber-cyan)',
+                  margin: 0,
+                  fontFamily: 'Orbitron, sans-serif'
                 }}>
                   {new Date(videojuego.anio_lanzamiento).toLocaleDateString('es-ES', {
                     year: 'numeric',
@@ -258,68 +262,80 @@ function VideojuegoDetail() {
                 </p>
               </div>
 
-              {/* Campo: Año */}
-              <div style={{
+              {/* Año */}
+              <div className="cyber-card" style={{
                 padding: '1.5rem',
-                backgroundColor: '#f9f9f9',
-                borderRadius: '8px'
+                background: 'rgba(255, 0, 110, 0.05)',
+                borderColor: 'var(--cyber-magenta)'
               }}>
                 <p style={{
-                  color: '#666',
-                  fontSize: '0.9rem',
-                  marginBottom: '0.5rem',
+                  color: 'var(--cyber-text-dim)',
+                  fontSize: '0.85rem',
+                  marginBottom: '0.75rem',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
+                  letterSpacing: '2px',
+                  fontWeight: 'bold'
                 }}>
-                  🗓️ Año
+                  🗓️ // AÑO
                 </p>
                 <p style={{
-                  fontSize: '1.3rem',
+                  fontSize: '1.5rem',
                   fontWeight: 'bold',
-                  margin: 0
+                  color: 'var(--cyber-magenta)',
+                  margin: 0,
+                  fontFamily: 'Orbitron, sans-serif'
                 }}>
                   {new Date(videojuego.anio_lanzamiento).getFullYear()}
                 </p>
               </div>
 
-              {/* Campo: Género */}
-              <div style={{
+              {/* Género */}
+              <div className="cyber-card" style={{
                 padding: '1.5rem',
-                backgroundColor: '#f9f9f9',
-                borderRadius: '8px'
+                background: 'rgba(255, 190, 11, 0.05)',
+                borderColor: 'var(--cyber-yellow)'
               }}>
                 <p style={{
-                  color: '#666',
-                  fontSize: '0.9rem',
-                  marginBottom: '0.5rem',
+                  color: 'var(--cyber-text-dim)',
+                  fontSize: '0.85rem',
+                  marginBottom: '0.75rem',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
+                  letterSpacing: '2px',
+                  fontWeight: 'bold'
                 }}>
-                  🎯 Género
+                  🎯 // GÉNERO
                 </p>
                 <p style={{
-                  fontSize: '1.3rem',
+                  fontSize: '1.5rem',
                   fontWeight: 'bold',
-                  margin: 0
+                  color: 'var(--cyber-yellow)',
+                  margin: 0,
+                  fontFamily: 'Orbitron, sans-serif'
                 }}>
                   {videojuego.genero}
                 </p>
               </div>
             </div>
 
-            {/* SECCIÓN: Plataformas */}
-            {videojuego.plataformas && videojuego.plataformas.length > 0 && (
+            {/* Divisor */}
+            <div className="cyber-divider" style={{ margin: '3rem 0' }} />
+
+            {/* Sección: Plataformas */}
+            {videojuego.plataformas && videojuego.plataformas.length > 0 ? (
               <div>
                 <h2 style={{
-                  fontSize: '1.8rem',
-                  marginBottom: '1rem',
-                  color: '#333'
+                  fontSize: '2rem',
+                  marginBottom: '2rem',
+                  color: 'var(--cyber-cyan)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '3px',
+                  fontWeight: '900'
                 }}>
-                  🕹️ Plataformas Disponibles
+                  🕹️ PLATAFORMAS DISPONIBLES
                   <span style={{
-                    marginLeft: '0.5rem',
+                    marginLeft: '1rem',
                     fontSize: '1.2rem',
-                    color: '#666',
+                    color: 'var(--cyber-text-dim)',
                     fontWeight: 'normal'
                   }}>
                     ({videojuego.plataformas.length})
@@ -329,106 +345,85 @@ function VideojuegoDetail() {
                 {/* Grid de plataformas */}
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '1rem'
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                  gap: '1.5rem'
                 }}>
-                  {/* Mapear cada plataforma a una tarjeta */}
                   {videojuego.plataformas.map(plataforma => (
                     <Link
                       key={plataforma.id}
                       to={`/plataformas/${plataforma.id}`}
-                      /**
-                       * Link a la página de detalle de la plataforma
-                       * 
-                       * Usuario puede hacer click para ver más info
-                       * de esa plataforma específica
-                       */
                       style={{
                         textDecoration: 'none',
                         color: 'inherit'
                       }}
                     >
-                      <div style={{
-                        padding: '1rem',
-                        backgroundColor: '#e3f2fd',
-                        borderRadius: '8px',
+                      <div className="cyber-card cyber-hover-lift" style={{
+                        padding: '1.5rem',
                         textAlign: 'center',
-                        transition: 'all 0.2s',
-                        cursor: 'pointer',
-                        border: '2px solid transparent'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#bbdefb';
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.borderColor = '#1976d2';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = '#e3f2fd';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.borderColor = 'transparent';
-                      }}
-                      >
-                        {/* Nombre de la plataforma */}
+                        background: 'rgba(0, 243, 255, 0.05)',
+                        borderColor: 'var(--cyber-cyan)',
+                        cursor: 'pointer'
+                      }}>
                         <h3 style={{
-                          fontSize: '1.1rem',
+                          fontSize: '1.2rem',
                           marginBottom: '0.5rem',
-                          color: '#1976d2'
+                          color: 'var(--cyber-cyan)',
+                          fontWeight: 'bold'
                         }}>
                           {plataforma.nombre}
                         </h3>
                         
-                        {/* Fabricante */}
                         <p style={{
                           fontSize: '0.9rem',
-                          color: '#666',
+                          color: 'var(--cyber-text-dim)',
                           margin: 0
                         }}>
-                          {plataforma.fabricante}
+                          🏭 {plataforma.fabricante}
                         </p>
                       </div>
                     </Link>
                   ))}
                 </div>
               </div>
-            )}
-
-            {/* Mensaje si no tiene plataformas */}
-            {(!videojuego.plataformas || videojuego.plataformas.length === 0) && (
-              <div style={{
-                padding: '2rem',
+            ) : (
+              <div className="cyber-card" style={{
+                padding: '3rem',
                 textAlign: 'center',
-                backgroundColor: '#f9f9f9',
-                borderRadius: '8px',
-                color: '#666'
+                background: 'rgba(26, 31, 58, 0.3)',
+                borderColor: 'var(--cyber-text-dim)'
               }}>
-                <p style={{ fontSize: '1.1rem' }}>
-                  Este videojuego no tiene plataformas asociadas
+                <div style={{ fontSize: '4rem', marginBottom: '1rem', opacity: 0.3 }}>
+                  📭
+                </div>
+                <p style={{ fontSize: '1.1rem', color: 'var(--cyber-text-dim)', margin: 0 }}>
+                  // Este videojuego no tiene plataformas asociadas
                 </p>
               </div>
             )}
           </div>
         </div>
 
+        {/* Metadatos */}
         {videojuego.created_at && (
-          <div style={{
+          <div className="cyber-card" style={{
             marginTop: '2rem',
-            padding: '1rem',
-            backgroundColor: 'white',
-            borderRadius: '8px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            fontSize: '0.9rem',
-            color: '#666',
+            padding: '1rem 1.5rem',
+            background: 'rgba(10, 14, 39, 0.8)',
+            borderColor: 'rgba(0, 243, 255, 0.2)',
+            fontSize: '0.85rem',
+            color: 'var(--cyber-text-dim)',
             display: 'flex',
             justifyContent: 'space-between',
-            gap: '1rem'
+            gap: '2rem',
+            flexWrap: 'wrap'
           }}>
             <span>
-              <strong>Creado:</strong>{' '}
+              <span style={{ color: 'var(--cyber-cyan)' }}>// CREADO:</span>{' '}
               {new Date(videojuego.created_at).toLocaleDateString('es-ES')}
             </span>
             {videojuego.updated_at && (
               <span>
-                <strong>Actualizado:</strong>{' '}
+                <span style={{ color: 'var(--cyber-cyan)' }}>// ACTUALIZADO:</span>{' '}
                 {new Date(videojuego.updated_at).toLocaleDateString('es-ES')}
               </span>
             )}

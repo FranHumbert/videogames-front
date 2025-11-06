@@ -4,6 +4,7 @@ import api from '../../services/api';
 import { getValidationErrors } from '../../services/auth';
 
 function Register() {
+  const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -12,53 +13,29 @@ function Register() {
     password_confirmation: ''
   });
   
-  const [errors, setErrors] = useState([]);
-  
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState([]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [e.target.name]: e.target.value
     });
-  };
-
-  const validatePasswords = () => {
-    if (formData.password !== formData.password_confirmation) {
-      setErrors(['Las contraseñas no coinciden']);
-      return false;
-    }
-    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     setErrors([]);
-    
-    if (!validatePasswords()) {
-      return;
-    }
-    
     setLoading(true);
 
     try {
-      await api.post('/register', formData);
-      
-      alert('✅ Registro exitoso. Ahora puedes iniciar sesión.');
-      
-      // Redirigir al login
+      await api.post('/auth/register', formData);
+      alert('✅ Usuario registrado exitosamente');
       navigate('/login');
-      
     } catch (error) {
-      
       console.error('Error en registro:', error);
-      
       const validationErrors = getValidationErrors(error);
-      
       setErrors(validationErrors);
-      
     } finally {
       setLoading(false);
     }
@@ -68,215 +45,274 @@ function Register() {
     <div style={{
       minHeight: '100vh',
       display: 'flex',
-      justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: '#f5f5f5'
+      justifyContent: 'center',
+      padding: '2rem',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
       
-      {/* TARJETA DEL FORMULARIO */}
+      {/* Elementos decorativos */}
       <div style={{
-        backgroundColor: 'white',
-        padding: '3rem',
-        borderRadius: '12px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+        position: 'absolute',
+        top: '20%',
+        right: '5%',
+        width: '350px',
+        height: '350px',
+        background: 'radial-gradient(circle, rgba(255,190,11,0.1) 0%, transparent 70%)',
+        borderRadius: '50%',
+        filter: 'blur(70px)',
+        animation: 'pulse 6s infinite'
+      }} />
+      
+      <div style={{
+        position: 'absolute',
+        bottom: '20%',
+        left: '5%',
+        width: '300px',
+        height: '300px',
+        background: 'radial-gradient(circle, rgba(131,56,236,0.1) 0%, transparent 70%)',
+        borderRadius: '50%',
+        filter: 'blur(60px)',
+        animation: 'pulse 5s infinite'
+      }} />
+
+      {/* Contenedor del formulario */}
+      <div className="cyber-card" style={{
         width: '100%',
-        maxWidth: '400px'
+        maxWidth: '500px',
+        padding: '3rem',
+        position: 'relative',
+        zIndex: 1,
+        animation: 'fadeIn 0.5s ease'
       }}>
         
-        {/* ENCABEZADO */}
+        {/* Header */}
         <div style={{
           textAlign: 'center',
           marginBottom: '2rem'
         }}>
-          <div style={{ fontSize: '4rem', marginBottom: '0.5rem' }}>
-            🎮
-          </div>
-          <h1 style={{ marginBottom: '0.5rem' }}>
-            Crear Cuenta
-          </h1>
-          <h2 style={{
-            color: '#666',
-            fontWeight: 'normal',
-            fontSize: '1.2rem'
+          <div style={{
+            fontSize: '4rem',
+            marginBottom: '1rem',
+            filter: 'drop-shadow(0 0 20px var(--cyber-magenta))'
           }}>
-            Registro
-          </h2>
+            🔐
+          </div>
+          
+          <h1 className="cyber-title" style={{
+            fontSize: '2rem',
+            marginBottom: '0.5rem',
+            background: 'linear-gradient(45deg, var(--cyber-magenta), var(--cyber-yellow))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}>
+            REGISTRO
+          </h1>
+          
+          <p style={{
+            color: 'var(--cyber-text-dim)',
+            fontSize: '0.9rem',
+            textTransform: 'uppercase',
+            letterSpacing: '2px'
+          }}>
+            // Solicitar Acceso al Sistema
+          </p>
         </div>
 
-        {/* LISTA DE ERRORES (Condicional) */}
+        <div className="cyber-divider" style={{ margin: '2rem 0' }} />
+
+        {/* Errores */}
         {errors.length > 0 && (
-          <div style={{
-            backgroundColor: '#fee',
-            color: '#c00',
-            padding: '1rem',
-            borderRadius: '6px',
-            marginBottom: '1rem',
-            border: '1px solid #fcc'
-          }}>
-            <strong>⚠️ Errores:</strong>
+          <div className="cyber-alert error" style={{ marginBottom: '1.5rem' }}>
+            <strong>⚠️ ERRORES DE VALIDACIÓN:</strong>
             <ul style={{
               margin: '0.5rem 0 0 0',
-              paddingLeft: '1.5rem'
+              paddingLeft: '1.5rem',
+              listStyle: 'none'
             }}>
               {errors.map((error, index) => (
-                <li key={index}>{error}</li>
+                <li key={index} style={{ marginTop: '0.25rem' }}>
+                  <span style={{ marginRight: '0.5rem' }}>▸</span>
+                  {error}
+                </li>
               ))}
             </ul>
           </div>
         )}
 
-        {/* FORMULARIO */}
+        {/* Formulario */}
         <form onSubmit={handleSubmit}>
           
-          {/* INPUT: Nombre */}
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              fontWeight: 'bold'
-            }}>
-              Nombre Completo
-            </label>
-            <input
-              type="text"
-              name="name"
-              placeholder="Juan Pérez"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                borderRadius: '6px',
-                border: '1px solid #ccc',
-                fontSize: '1rem',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          {/* INPUT: Email */}
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              fontWeight: 'bold'
-            }}>
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              placeholder="email@ejemplo.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                borderRadius: '6px',
-                border: '1px solid #ccc',
-                fontSize: '1rem',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          {/* INPUT: Contraseña */}
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              fontWeight: 'bold'
-            }}>
-              Contraseña
-            </label>
-            <input
-              type="password"
-              name="password"
-              placeholder="Mínimo 8 caracteres"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              minLength={8}
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                borderRadius: '6px',
-                border: '1px solid #ccc',
-                fontSize: '1rem',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          {/* INPUT: Confirmar Contraseña */}
+          {/* Nombre */}
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{
               display: 'block',
               marginBottom: '0.5rem',
-              fontWeight: 'bold'
+              color: 'var(--cyber-cyan)',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
             }}>
-              Confirmar Contraseña
+              // NOMBRE
+            </label>
+            <input
+              type="text"
+              name="name"
+              placeholder="Usuario Friki"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              disabled={loading}
+              className="cyber-input"
+            />
+          </div>
+
+          {/* Email */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '0.5rem',
+              color: 'var(--cyber-cyan)',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
+            }}>
+              // EMAIL
+            </label>
+            <input
+              type="email"
+              name="email"
+              placeholder="friki@mail.com"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              disabled={loading}
+              className="cyber-input"
+            />
+          </div>
+
+          {/* Password */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '0.5rem',
+              color: 'var(--cyber-cyan)',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
+            }}>
+              // PASSWORD
+            </label>
+            <input
+              type="password"
+              name="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              disabled={loading}
+              className="cyber-input"
+            />
+          </div>
+
+          {/* Confirmar Password */}
+          <div style={{ marginBottom: '2rem' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '0.5rem',
+              color: 'var(--cyber-cyan)',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
+            }}>
+              // CONFIRMAR PASSWORD
             </label>
             <input
               type="password"
               name="password_confirmation"
-              placeholder="Repite la contraseña"
+              placeholder="••••••••"
               value={formData.password_confirmation}
               onChange={handleChange}
               required
               disabled={loading}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                borderRadius: '6px',
-                border: '1px solid #ccc',
-                fontSize: '1rem',
-                boxSizing: 'border-box'
-              }}
+              className="cyber-input"
             />
           </div>
 
-          {/* BOTÓN SUBMIT */}
+          {/* Botón Submit */}
           <button
             type="submit"
             disabled={loading}
+            className="cyber-button magenta"
             style={{
               width: '100%',
-              padding: '0.75rem',
-              backgroundColor: '#4CAF50',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '1rem',
-              fontWeight: 'bold',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.7 : 1,
-              marginBottom: '1rem'
+              marginBottom: '1.5rem',
+              opacity: loading ? 0.6 : 1,
+              cursor: loading ? 'not-allowed' : 'pointer'
             }}
           >
-            {loading ? '⏳ Registrando...' : '📝 Registrarse'}
+            {loading ? (
+              <span className="cyber-loading">⟳ PROCESANDO...</span>
+            ) : (
+              '▶ SOLICITAR ACCESO'
+            )}
           </button>
 
-          {/* LINK A LOGIN */}
-          <p style={{ textAlign: 'center', margin: 0 }}>
-            ¿Ya tienes cuenta?{' '}
+          {/* Link a Login */}
+          <div style={{
+            textAlign: 'center',
+            paddingTop: '1rem',
+            borderTop: '1px solid rgba(255, 0, 110, 0.2)'
+          }}>
+            <p style={{
+              color: 'var(--cyber-text-dim)',
+              fontSize: '0.9rem',
+              marginBottom: '0.5rem'
+            }}>
+              ¿Ya tienes acceso?
+            </p>
             <Link
               to="/login"
               style={{
-                color: '#1976d2',
+                color: 'var(--cyber-cyan)',
+                textDecoration: 'none',
+                fontSize: '1rem',
                 fontWeight: 'bold',
-                textDecoration: 'none'
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.textShadow = '0 0 10px var(--cyber-cyan)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.textShadow = 'none';
               }}
             >
-              Inicia sesión
+              // INICIAR SESIÓN ▶
             </Link>
-          </p>
+          </div>
         </form>
+
+        {/* Info de seguridad */}
+        <div style={{
+          marginTop: '2rem',
+          padding: '1rem',
+          background: 'rgba(0, 243, 255, 0.05)',
+          border: '1px solid rgba(0, 243, 255, 0.2)',
+          clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)',
+          fontSize: '0.8rem',
+          color: 'var(--cyber-text-dim)',
+          textAlign: 'center'
+        }}>
+          <span style={{ color: 'var(--cyber-cyan)' }}>🔒</span> Todos los datos están encriptados
+        </div>
       </div>
     </div>
   );

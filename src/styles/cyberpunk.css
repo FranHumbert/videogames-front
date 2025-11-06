@@ -1,0 +1,468 @@
+:root {
+    /* Colores Neón */
+    --cyber-cyan: #00f3ff;
+    --cyber-magenta: #ff006e;
+    --cyber-yellow: #ffbe0b;
+    --cyber-purple: #8338ec;
+    --cyber-green: #3bff00;
+    
+    /* Fondos */
+    --cyber-dark: #0a0e27;
+    --cyber-darker: #050814;
+    --cyber-card: #1a1f3a;
+    
+    /* Textos */
+    --cyber-text: #e0e0e0;
+    --cyber-text-dim: #a0a0a0;
+    
+    /* Efectos */
+    --neon-glow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+    --cyber-border: 2px solid var(--cyber-cyan);
+  }
+  
+  /* Reset y configuración base */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Rajdhani', 'Roboto', sans-serif;
+    background: linear-gradient(135deg, var(--cyber-darker) 0%, var(--cyber-dark) 100%);
+    background-attachment: fixed;
+    color: var(--cyber-text);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  
+  /* Fondo animado con grid */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  /* Contenedor principal */
+  #root {
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* BOTONES CYBERPUNK */
+  
+  .cyber-button {
+    position: relative;
+    padding: 0.75rem 2rem;
+    background: transparent;
+    color: var(--cyber-cyan);
+    border: 2px solid var(--cyber-cyan);
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  }
+  
+  .cyber-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--cyber-cyan);
+    transition: left 0.3s ease;
+    z-index: -1;
+  }
+  
+  .cyber-button:hover {
+    color: var(--cyber-dark);
+    box-shadow: 0 0 20px var(--cyber-cyan);
+  }
+  
+  .cyber-button:hover::before {
+    left: 0;
+  }
+  
+  /* Variantes de botones */
+  .cyber-button.magenta {
+    border-color: var(--cyber-magenta);
+    color: var(--cyber-magenta);
+  }
+  
+  .cyber-button.magenta::before {
+    background: var(--cyber-magenta);
+  }
+  
+  .cyber-button.magenta:hover {
+    box-shadow: 0 0 20px var(--cyber-magenta);
+  }
+  
+  .cyber-button.yellow {
+    border-color: var(--cyber-yellow);
+    color: var(--cyber-yellow);
+  }
+  
+  .cyber-button.yellow::before {
+    background: var(--cyber-yellow);
+  }
+  
+  .cyber-button.yellow:hover {
+    box-shadow: 0 0 20px var(--cyber-yellow);
+  }
+  
+  .cyber-button.green {
+    border-color: var(--cyber-green);
+    color: var(--cyber-green);
+  }
+  
+  .cyber-button.green::before {
+    background: var(--cyber-green);
+  }
+  
+  .cyber-button.green:hover {
+    box-shadow: 0 0 20px var(--cyber-green);
+  }
+  
+  /* TARJETAS CYBERPUNK */
+  
+  .cyber-card {
+    background: var(--cyber-card);
+    border: 2px solid var(--cyber-cyan);
+    border-radius: 0;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+    transition: all 0.3s ease;
+  }
+  
+  .cyber-card::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, var(--cyber-cyan), var(--cyber-magenta), var(--cyber-yellow));
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .cyber-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 
+      0 0 20px rgba(0, 243, 255, 0.5),
+      0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+  
+  .cyber-card:hover::before {
+    opacity: 0.7;
+  }
+  
+  /* Esquinas decorativas */
+  .cyber-card::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    border-top: 2px solid var(--cyber-cyan);
+    border-right: 2px solid var(--cyber-cyan);
+  }
+  
+  /* INPUTS CYBERPUNK */
+  
+  .cyber-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(26, 31, 58, 0.8);
+    border: 2px solid var(--cyber-cyan);
+    color: var(--cyber-text);
+    font-size: 1rem;
+    font-family: 'Rajdhani', sans-serif;
+    transition: all 0.3s ease;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  }
+  
+  .cyber-input:focus {
+    outline: none;
+    box-shadow: 0 0 15px var(--cyber-cyan);
+    background: rgba(26, 31, 58, 1);
+  }
+  
+  .cyber-input::placeholder {
+    color: var(--cyber-text-dim);
+  }
+  
+  /* BADGES Y TAGS */
+  
+  .cyber-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: transparent;
+    border: 1px solid var(--cyber-cyan);
+    color: var(--cyber-cyan);
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+    position: relative;
+  }
+  
+  .cyber-badge::before {
+    content: '//';
+    margin-right: 5px;
+    opacity: 0.5;
+  }
+  
+  /* TÍTULOS Y TEXTOS */
+  
+  .cyber-title {
+    font-size: 3rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    background: linear-gradient(45deg, var(--cyber-cyan), var(--cyber-magenta));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    display: inline-block;
+    text-shadow: 0 0 30px rgba(0, 243, 255, 0.5);
+  }
+  
+  .cyber-title::before {
+    content: attr(data-text);
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    z-index: -1;
+    background: linear-gradient(45deg, var(--cyber-magenta), var(--cyber-yellow));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .cyber-subtitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--cyber-cyan);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px var(--cyber-cyan);
+  }
+  
+  /* EFECTOS DE CARGA (GLITCH) */
+  
+  .cyber-loading {
+    display: inline-block;
+    position: relative;
+    color: var(--cyber-cyan);
+    font-size: 1.5rem;
+    font-weight: bold;
+    animation: glitch 1s infinite;
+  }
+  
+  @keyframes glitch {
+    0%, 100% {
+      text-shadow: 
+        2px 0 var(--cyber-magenta),
+        -2px 0 var(--cyber-cyan);
+    }
+    25% {
+      text-shadow: 
+        -2px 0 var(--cyber-magenta),
+        2px 0 var(--cyber-cyan);
+    }
+    50% {
+      text-shadow: 
+        2px 2px var(--cyber-magenta),
+        -2px -2px var(--cyber-cyan);
+    }
+    75% {
+      text-shadow: 
+        -2px 2px var(--cyber-magenta),
+        2px -2px var(--cyber-cyan);
+    }
+  }
+  
+  /* BORDES DECORATIVOS */
+  
+  .cyber-border {
+    position: relative;
+    padding: 2rem;
+  }
+  
+  .cyber-border::before,
+  .cyber-border::after {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-color: var(--cyber-cyan);
+    border-style: solid;
+  }
+  
+  .cyber-border::before {
+    top: 0;
+    left: 0;
+    border-width: 2px 0 0 2px;
+  }
+  
+  .cyber-border::after {
+    bottom: 0;
+    right: 0;
+    border-width: 0 2px 2px 0;
+  }
+  
+  /* GRID CYBERPUNK */
+  
+  .cyber-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+  }
+  
+  /* SCROLLBAR CYBERPUNK */
+  
+  ::-webkit-scrollbar {
+    width: 10px;
+    background: var(--cyber-dark);
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--cyber-darker);
+    border-left: 1px solid var(--cyber-cyan);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--cyber-cyan);
+    box-shadow: 0 0 10px var(--cyber-cyan);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--cyber-magenta);
+    box-shadow: 0 0 10px var(--cyber-magenta);
+  }
+  
+  /* ANIMACIONES */
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .cyber-fade-in {
+    animation: fadeIn 0.5s ease;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  
+  .cyber-pulse {
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  .cyber-slide-in {
+    animation: slideInRight 0.5s ease;
+  }
+  
+  /* EFECTOS DE HOVER */
+  
+  .cyber-hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .cyber-hover-lift:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 243, 255, 0.4);
+  }
+  
+  /* DIVISORES */
+  
+  .cyber-divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyber-cyan), transparent);
+    margin: 2rem 0;
+    position: relative;
+  }
+  
+  .cyber-divider::before {
+    content: '◆';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--cyber-cyan);
+    background: var(--cyber-dark);
+    padding: 0 1rem;
+    text-shadow: 0 0 10px var(--cyber-cyan);
+  }
+  
+  /* ALERTAS CYBERPUNK */
+  
+  .cyber-alert {
+    padding: 1rem 1.5rem;
+    border-left: 4px solid var(--cyber-cyan);
+    background: rgba(0, 243, 255, 0.1);
+    color: var(--cyber-text);
+    margin: 1rem 0;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+  }
+  
+  .cyber-alert.error {
+    border-left-color: var(--cyber-magenta);
+    background: rgba(255, 0, 110, 0.1);
+  }
+  
+  .cyber-alert.success {
+    border-left-color: var(--cyber-green);
+    background: rgba(59, 255, 0, 0.1);
+  }
+  
+  .cyber-alert.warning {
+    border-left-color: var(--cyber-yellow);
+    background: rgba(255, 190, 11, 0.1);
+  }

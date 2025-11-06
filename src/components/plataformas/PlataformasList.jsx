@@ -10,6 +10,7 @@ import { useAuth } from '../../context/AuthContext';
 function PlataformasList() {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
+  
   const [plataformas, setPlataformas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -18,7 +19,6 @@ function PlataformasList() {
     fetchPlataformas();
   }, []);
 
-  // FUNCIÓN: Obtener plataformas
   const fetchPlataformas = async () => {
     try {
       setLoading(true);
@@ -35,7 +35,6 @@ function PlataformasList() {
     }
   };
 
-  // FUNCIÓN: Eliminar plataforma
   const handleDelete = async (id, nombre) => {
     if (!window.confirm(`¿Estás seguro de eliminar "${nombre}"?`)) {
       return;
@@ -43,10 +42,7 @@ function PlataformasList() {
 
     try {
       await api.delete(`/plataformas/${id}`);
-      
-      // Filtrar del estado local
       setPlataformas(prev => prev.filter(p => p.id !== id));
-      
       alert('✅ Plataforma eliminada exitosamente');
       
     } catch (error) {
@@ -81,169 +77,228 @@ function PlataformasList() {
 
   return (
     <Layout>
-      <div>
+      <div className="cyber-fade-in" style={{ padding: '2rem' }}>
+        
         {/* ENCABEZADO */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '2rem'
+          marginBottom: '3rem',
+          flexWrap: 'wrap',
+          gap: '1rem'
         }}>
           <div>
             <h1 style={{
-              fontSize: '2.5rem',
+              fontSize: '3rem',
+              fontWeight: '900',
+              textTransform: 'uppercase',
+              letterSpacing: '5px',
+              background: 'linear-gradient(45deg, var(--cyber-magenta), var(--cyber-yellow))',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
               marginBottom: '0.5rem'
             }}>
-              🕹️ Plataformas
+              🕹️ PLATAFORMAS
             </h1>
-            <p style={{
-              color: '#666',
-              fontSize: '1.1rem'
+            
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem'
             }}>
-              Total: <strong>{plataformas.length}</strong> plataformas registradas
-            </p>
+              <span className="cyber-badge" style={{
+                borderColor: 'var(--cyber-magenta)',
+                color: 'var(--cyber-magenta)',
+                fontSize: '1rem'
+              }}>
+                TOTAL: {plataformas.length}
+              </span>
+              
+              <div style={{
+                width: '2px',
+                height: '20px',
+                background: 'var(--cyber-magenta)',
+                opacity: 0.3
+              }} />
+              
+              <span style={{
+                color: 'var(--cyber-text-dim)',
+                fontSize: '0.9rem',
+                textTransform: 'uppercase',
+                letterSpacing: '1px'
+              }}>
+                // Hardware Database
+              </span>
+            </div>
           </div>
 
           {/* Botón Crear (solo admin) */}
           {isAdmin && (
             <button
               onClick={() => navigate('/plataformas/crear')}
+              className="cyber-button magenta"
               style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: '#7b1fa2',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '1rem',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#6a1b9a';
-                e.target.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = '#7b1fa2';
-                e.target.style.transform = 'translateY(0)';
+                padding: '1rem 2rem',
+                fontSize: '1rem'
               }}
             >
-              ➕ Crear Nueva Plataforma
+              ➕ CREAR NUEVA
             </button>
           )}
         </div>
 
-        {/* CONTENIDO: Lista vacía o con datos */}
+        <div className="cyber-divider" style={{ marginBottom: '3rem' }} />
+
+        {/* CONTENIDO */}
         {plataformas.length === 0 ? (
           <EmptyState
             icon="🕹️"
             message="No hay plataformas registradas"
-            actionText={isAdmin ? "Crear la primera" : undefined}
+            actionText={isAdmin ? "CREAR LA PRIMERA" : undefined}
             onAction={isAdmin ? () => navigate('/plataformas/crear') : undefined}
           />
         ) : (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '1.5rem'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: '2rem'
           }}>
-            {/* Mapear plataformas */}
             {plataformas.map(plataforma => (
               <div
                 key={plataforma.id}
+                className="cyber-card cyber-hover-lift"
                 style={{
-                  backgroundColor: 'white',
-                  borderRadius: '12px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  overflow: 'hidden',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  borderColor: 'var(--cyber-magenta)',
+                  background: 'rgba(26, 31, 58, 0.6)',
                   display: 'flex',
-                  flexDirection: 'column'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                  flexDirection: 'column',
+                  position: 'relative',
+                  overflow: 'hidden'
                 }}
               >
+                {/* Decoración de fondo */}
+                <div style={{
+                  position: 'absolute',
+                  top: '-30px',
+                  right: '-30px',
+                  fontSize: '8rem',
+                  opacity: 0.05,
+                  transform: 'rotate(-15deg)'
+                }}>
+                  🕹️
+                </div>
+
                 {/* Contenido */}
-                <div style={{ padding: '1.5rem', flex: 1 }}>
+                <div style={{ padding: '2rem', flex: 1, position: 'relative', zIndex: 1 }}>
+                  
+                  {/* Icono grande */}
+                  <div style={{
+                    fontSize: '4rem',
+                    textAlign: 'center',
+                    marginBottom: '1.5rem',
+                    filter: 'drop-shadow(0 0 15px var(--cyber-magenta))'
+                  }}>
+                    🕹️
+                  </div>
+
                   {/* Nombre */}
                   <h2 style={{
-                    fontSize: '1.4rem',
-                    marginBottom: '0.5rem',
-                    color: '#7b1fa2'
+                    fontSize: '1.6rem',
+                    color: 'var(--cyber-magenta)',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    marginBottom: '0.75rem',
+                    lineHeight: '1.3'
                   }}>
                     {plataforma.nombre}
                   </h2>
-                  
-                  {/* Fabricante */}
-                  <p style={{
-                    color: '#666',
-                    marginBottom: '1rem',
-                    fontSize: '1.1rem'
-                  }}>
-                    🏭 {plataforma.fabricante}
-                  </p>
 
-                  {/* Cantidad de videojuegos */}
+                  {/* Fabricante */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    marginBottom: '1.5rem',
+                    color: 'var(--cyber-text-dim)',
+                    fontSize: '1rem'
+                  }}>
+                    <span style={{ color: 'var(--cyber-yellow)' }}>🏭</span>
+                    <span>{plataforma.fabricante}</span>
+                  </div>
+
+                  {/* Contador de juegos */}
                   {plataforma.videojuegos_count !== undefined && (
                     <div style={{
-                      padding: '0.75rem',
-                      backgroundColor: '#f3e5f5',
-                      borderRadius: '6px',
-                      textAlign: 'center'
+                      padding: '1rem',
+                      background: 'rgba(255, 0, 110, 0.1)',
+                      border: '2px solid var(--cyber-magenta)',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                      clipPath: 'polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)'
                     }}>
-                      <p style={{
-                        margin: 0,
-                        fontSize: '0.9rem',
-                        color: '#666'
+                      <div style={{
+                        fontSize: '0.85rem',
+                        color: 'var(--cyber-text-dim)',
+                        marginBottom: '0.5rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px'
                       }}>
-                        Videojuegos disponibles
-                      </p>
-                      <p style={{
-                        margin: 0,
-                        fontSize: '1.8rem',
-                        fontWeight: 'bold',
-                        color: '#7b1fa2'
+                        Videojuegos Disponibles
+                      </div>
+                      <div style={{
+                        fontSize: '2.5rem',
+                        fontWeight: '900',
+                        color: 'var(--cyber-magenta)',
+                        fontFamily: 'Orbitron, sans-serif',
+                        textShadow: '0 0 15px var(--cyber-magenta)'
                       }}>
                         {plataforma.videojuegos_count}
-                      </p>
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* Acciones */}
+                {/* Footer: Botones */}
                 <div style={{
                   padding: '1rem 1.5rem',
-                  backgroundColor: '#fafafa',
+                  background: 'rgba(10, 14, 39, 0.8)',
+                  borderTop: '1px solid rgba(255, 0, 110, 0.2)',
                   display: 'flex',
-                  gap: '0.5rem',
-                  borderTop: '1px solid #eee'
+                  gap: '0.75rem'
                 }}>
                   {/* Botón Ver */}
                   <Link
                     to={`/plataformas/${plataforma.id}`}
                     style={{
                       flex: 1,
-                      padding: '0.6rem',
-                      backgroundColor: '#7b1fa2',
-                      color: 'white',
+                      padding: '0.75rem',
+                      background: 'transparent',
+                      color: 'var(--cyber-magenta)',
                       textAlign: 'center',
                       textDecoration: 'none',
-                      borderRadius: '6px',
+                      border: '2px solid var(--cyber-magenta)',
                       fontSize: '0.9rem',
                       fontWeight: 'bold',
-                      transition: 'background-color 0.2s'
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                      transition: 'all 0.3s ease',
+                      clipPath: 'polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)'
                     }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#6a1b9a'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = '#7b1fa2'}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = 'var(--cyber-magenta)';
+                      e.target.style.color = 'var(--cyber-dark)';
+                      e.target.style.boxShadow = '0 0 20px var(--cyber-magenta)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'transparent';
+                      e.target.style.color = 'var(--cyber-magenta)';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   >
-                    👁️ Ver
+                    👁️ VER
                   </Link>
 
                   {/* Botones Admin */}
@@ -253,40 +308,61 @@ function PlataformasList() {
                         to={`/plataformas/${plataforma.id}/editar`}
                         style={{
                           flex: 1,
-                          padding: '0.6rem',
-                          backgroundColor: '#FF9800',
-                          color: 'white',
+                          padding: '0.75rem',
+                          background: 'transparent',
+                          color: 'var(--cyber-yellow)',
                           textAlign: 'center',
                           textDecoration: 'none',
-                          borderRadius: '6px',
+                          border: '2px solid var(--cyber-yellow)',
                           fontSize: '0.9rem',
                           fontWeight: 'bold',
-                          transition: 'background-color 0.2s'
+                          textTransform: 'uppercase',
+                          letterSpacing: '1px',
+                          transition: 'all 0.3s ease',
+                          clipPath: 'polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)'
                         }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f57c00'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#FF9800'}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = 'var(--cyber-yellow)';
+                          e.target.style.color = 'var(--cyber-dark)';
+                          e.target.style.boxShadow = '0 0 20px var(--cyber-yellow)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = 'transparent';
+                          e.target.style.color = 'var(--cyber-yellow)';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       >
-                        ✏️ Editar
+                        ✏️ EDIT
                       </Link>
                       
                       <button
                         onClick={() => handleDelete(plataforma.id, plataforma.nombre)}
                         style={{
                           flex: 1,
-                          padding: '0.6rem',
-                          backgroundColor: '#f44336',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '6px',
+                          padding: '0.75rem',
+                          background: 'transparent',
+                          color: 'var(--cyber-cyan)',
+                          border: '2px solid var(--cyber-cyan)',
                           fontSize: '0.9rem',
                           fontWeight: 'bold',
+                          textTransform: 'uppercase',
+                          letterSpacing: '1px',
                           cursor: 'pointer',
-                          transition: 'background-color 0.2s'
+                          transition: 'all 0.3s ease',
+                          clipPath: 'polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)'
                         }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#d32f2f'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#f44336'}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = 'var(--cyber-cyan)';
+                          e.target.style.color = 'var(--cyber-dark)';
+                          e.target.style.boxShadow = '0 0 20px var(--cyber-cyan)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = 'transparent';
+                          e.target.style.color = 'var(--cyber-cyan)';
+                          e.target.style.boxShadow = 'none';
+                        }}
                       >
-                        🗑️
+                        🗑️ 
                       </button>
                     </>
                   )}

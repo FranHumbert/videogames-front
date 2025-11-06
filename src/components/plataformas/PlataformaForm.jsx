@@ -9,7 +9,7 @@ function PlataformaForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = Boolean(id);
-
+  
   const [formData, setFormData] = useState({
     nombre: '',
     fabricante: ''
@@ -25,7 +25,6 @@ function PlataformaForm() {
     }
   }, [id]);
 
-  // FUNCIÓN: Cargar plataforma (modo editar)
   const loadPlataforma = async () => {
     try {
       setLoading(true);
@@ -33,7 +32,6 @@ function PlataformaForm() {
       const response = await api.get(`/plataformas/${id}`);
       const plataforma = response.data.data;
       
-      // Poblar formulario
       setFormData({
         nombre: plataforma.nombre,
         fabricante: plataforma.fabricante
@@ -47,7 +45,6 @@ function PlataformaForm() {
     }
   };
 
-  // FUNCIÓN: Manejar cambios en inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -56,7 +53,6 @@ function PlataformaForm() {
     });
   };
 
-  // FUNCIÓN: Enviar formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors([]);
@@ -64,11 +60,9 @@ function PlataformaForm() {
 
     try {
       if (isEditMode) {
-        // Actualizar
         await api.put(`/plataformas/${id}`, formData);
         alert('✅ Plataforma actualizada exitosamente');
       } else {
-        // Crear
         await api.post('/plataformas', formData);
         alert('✅ Plataforma creada exitosamente');
       }
@@ -95,71 +89,92 @@ function PlataformaForm() {
 
   return (
     <Layout>
-      <div>
-        {/* Encabezado */}
+      <div className="cyber-fade-in" style={{ padding: '2rem' }}>
+        
+        {/* ENCABEZADO */}
         <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '2rem'
+          marginBottom: '3rem',
+          textAlign: 'center'
         }}>
-          <div>
-            <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>
-              {isEditMode ? '✏️ Editar Plataforma' : '➕ Crear Plataforma'}
-            </h1>
-            <p style={{ color: '#666' }}>
-              {isEditMode 
-                ? 'Modifica los datos de la plataforma' 
-                : 'Completa el formulario para agregar una nueva plataforma'
-              }
-            </p>
+          <div style={{
+            fontSize: '5rem',
+            marginBottom: '1rem',
+            filter: 'drop-shadow(0 0 20px var(--cyber-magenta))'
+          }}>
+            {isEditMode ? '✏️' : '➕'}
           </div>
+          
+          <h1 style={{
+            fontSize: '2.5rem',
+            fontWeight: '900',
+            textTransform: 'uppercase',
+            letterSpacing: '5px',
+            background: 'linear-gradient(45deg, var(--cyber-magenta), var(--cyber-yellow))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '0.5rem'
+          }}>
+            {isEditMode ? 'EDITAR PLATAFORMA' : 'CREAR PLATAFORMA'}
+          </h1>
+          
+          <p style={{
+            color: 'var(--cyber-text-dim)',
+            fontSize: '1rem',
+            textTransform: 'uppercase',
+            letterSpacing: '2px'
+          }}>
+            {isEditMode 
+              ? '// Modificar Hardware' 
+              : '// Agregar Nuevo Hardware'
+            }
+          </p>
+
+          <div className="cyber-divider" style={{ margin: '2rem auto', maxWidth: '400px' }} />
         </div>
 
-        {/* Tarjeta del formulario */}
-        <div style={{
-          backgroundColor: 'white',
-          padding: '2rem',
-          borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          maxWidth: '600px',
-          margin: '0 auto'
+        {/* TARJETA DEL FORMULARIO */}
+        <div className="cyber-card" style={{
+          maxWidth: '700px',
+          margin: '0 auto',
+          padding: '3rem',
+          borderColor: 'var(--cyber-magenta)',
+          background: 'rgba(26, 31, 58, 0.8)'
         }}>
           
-          {/* Lista de errores */}
           {errors.length > 0 && (
-            <div style={{
-              backgroundColor: '#fee',
-              color: '#c00',
-              padding: '1rem',
-              borderRadius: '6px',
-              marginBottom: '1.5rem',
-              border: '1px solid #fcc'
-            }}>
-              <strong>⚠️ Errores de validación:</strong>
+            <div className="cyber-alert error" style={{ marginBottom: '2rem' }}>
+              <strong>⚠️ ERRORES DE VALIDACIÓN:</strong>
               <ul style={{
                 margin: '0.5rem 0 0 0',
-                paddingLeft: '1.5rem'
+                paddingLeft: '1.5rem',
+                listStyle: 'none'
               }}>
                 {errors.map((error, index) => (
-                  <li key={index}>{error}</li>
+                  <li key={index} style={{ marginTop: '0.5rem' }}>
+                    <span style={{ marginRight: '0.5rem' }}>▸</span>
+                    {error}
+                  </li>
                 ))}
               </ul>
             </div>
           )}
 
-          {/* Formulario */}
           <form onSubmit={handleSubmit}>
             
-            {/* Campo: Nombre */}
-            <div style={{ marginBottom: '1.5rem' }}>
+            {/* CAMPO: Nombre */}
+            <div style={{ marginBottom: '2rem' }}>
               <label style={{
                 display: 'block',
-                marginBottom: '0.5rem',
+                marginBottom: '0.75rem',
+                color: 'var(--cyber-magenta)',
+                fontSize: '0.9rem',
                 fontWeight: 'bold',
-                fontSize: '1rem'
+                textTransform: 'uppercase',
+                letterSpacing: '2px'
               }}>
-                Nombre de la Plataforma <span style={{ color: 'red' }}>*</span>
+                <span style={{ marginRight: '0.5rem' }}>🕹️</span>
+                // NOMBRE <span style={{ color: 'var(--cyber-cyan)' }}>*</span>
               </label>
               <input
                 type="text"
@@ -170,29 +185,32 @@ function PlataformaForm() {
                 required
                 maxLength={100}
                 disabled={submitting}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid #ccc',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box'
-                }}
+                className="cyber-input"
               />
-              <small style={{ color: '#666', fontSize: '0.85rem' }}>
-                Máximo 100 caracteres
+              <small style={{ 
+                display: 'block',
+                marginTop: '0.5rem',
+                color: 'var(--cyber-text-dim)', 
+                fontSize: '0.8rem',
+                letterSpacing: '1px'
+              }}>
+                MAX 100 CARACTERES
               </small>
             </div>
 
-            {/* Campo: Fabricante */}
-            <div style={{ marginBottom: '2rem' }}>
+            {/* CAMPO: Fabricante */}
+            <div style={{ marginBottom: '2.5rem' }}>
               <label style={{
                 display: 'block',
-                marginBottom: '0.5rem',
+                marginBottom: '0.75rem',
+                color: 'var(--cyber-magenta)',
+                fontSize: '0.9rem',
                 fontWeight: 'bold',
-                fontSize: '1rem'
+                textTransform: 'uppercase',
+                letterSpacing: '2px'
               }}>
-                Fabricante <span style={{ color: 'red' }}>*</span>
+                <span style={{ marginRight: '0.5rem' }}>🏭</span>
+                // FABRICANTE <span style={{ color: 'var(--cyber-cyan)' }}>*</span>
               </label>
               <input
                 type="text"
@@ -203,69 +221,78 @@ function PlataformaForm() {
                 required
                 maxLength={100}
                 disabled={submitting}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid #ccc',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box'
-                }}
+                className="cyber-input"
               />
-              <small style={{ color: '#666', fontSize: '0.85rem' }}>
-                Máximo 100 caracteres
+              <small style={{ 
+                display: 'block',
+                marginTop: '0.5rem',
+                color: 'var(--cyber-text-dim)', 
+                fontSize: '0.8rem',
+                letterSpacing: '1px'
+              }}>
+                MAX 100 CARACTERES
               </small>
             </div>
 
-            {/* Botones */}
+            <div className="cyber-divider" style={{ margin: '2.5rem 0' }} />
+
+            {/* BOTONES */}
             <div style={{
               display: 'flex',
               gap: '1rem',
-              justifyContent: 'flex-end'
+              justifyContent: 'center',
+              flexWrap: 'wrap'
             }}>
-              {/* Cancelar */}
               <button
                 type="button"
                 onClick={() => navigate('/plataformas')}
                 disabled={submitting}
+                className="cyber-button"
                 style={{
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: '#6c757d',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
+                  padding: '1rem 2.5rem',
                   fontSize: '1rem',
-                  fontWeight: 'bold',
-                  cursor: submitting ? 'not-allowed' : 'pointer',
-                  opacity: submitting ? 0.6 : 1
+                  borderColor: 'var(--cyber-text-dim)',
+                  color: 'var(--cyber-text-dim)',
+                  opacity: submitting ? 0.5 : 1,
+                  cursor: submitting ? 'not-allowed' : 'pointer'
                 }}
               >
-                ❌ Cancelar
+                ❌ CANCELAR
               </button>
               
-              {/* Guardar */}
               <button
                 type="submit"
                 disabled={submitting}
+                className="cyber-button magenta"
                 style={{
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: '#7b1fa2',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
+                  padding: '1rem 2.5rem',
                   fontSize: '1rem',
-                  fontWeight: 'bold',
-                  cursor: submitting ? 'not-allowed' : 'pointer',
-                  opacity: submitting ? 0.6 : 1
+                  opacity: submitting ? 0.6 : 1,
+                  cursor: submitting ? 'not-allowed' : 'pointer'
                 }}
               >
-                {submitting 
-                  ? '⏳ Guardando...' 
-                  : isEditMode 
-                    ? '💾 Actualizar' 
-                    : '✅ Crear'
-                }
+                {submitting ? (
+                  <span className="cyber-loading">⟳ PROCESANDO...</span>
+                ) : (
+                  <>
+                    {isEditMode ? '💾 ACTUALIZAR' : '✅ CREAR'}
+                  </>
+                )}
               </button>
+            </div>
+
+            <div style={{
+              marginTop: '2rem',
+              padding: '1rem',
+              background: 'rgba(255, 0, 110, 0.05)',
+              border: '1px solid rgba(255, 0, 110, 0.2)',
+              borderRadius: '6px',
+              fontSize: '0.85rem',
+              color: 'var(--cyber-text-dim)',
+              textAlign: 'center'
+            }}>
+              <span style={{ color: 'var(--cyber-magenta)' }}>💡</span> Los campos marcados con{' '}
+              <span style={{ color: 'var(--cyber-cyan)' }}>*</span> son obligatorios
             </div>
           </form>
         </div>
